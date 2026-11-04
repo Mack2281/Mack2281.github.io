@@ -308,15 +308,43 @@
     on(dlg, "click", function (e) { if (e.target === dlg) dlg.close(); });
   })();
 
-  /* ---------- open-mic photos open in the same viewer ---------- */
+  /* ---------- open-mic photos: one small framed viewer ---------- */
   (function () {
-    var dlg = $("#lightbox"), img = $("#lbImg"), cap = $("#lbCap");
-    $$(".shot").forEach(function (b) {
-      on(b, "click", function () {
-        img.src = b.dataset.full; img.alt = b.querySelector("img").alt; cap.textContent = b.dataset.title;
-        if (dlg.showModal) dlg.showModal(); else window.open(b.dataset.full, "_blank");
-      });
+    var P = [
+      ["kalakar", "Kalakar", "Mayank leaning on a wall beneath a painted sign that reads Kalakar"],
+      ["tape-a-tale", "Tape A Tale", "Mayank reading from a notebook on stage at Tape A Tale"],
+      ["sahitya-tak", "Sahitya Tak, Mike Ke Laal", "Mayank performing on stage at the Sahitya Tak event Mike Ke Laal"],
+      ["red-curtain", "On stage", "Mayank speaking into a microphone in front of a red curtain"],
+      ["black-white", "On stage", "Black and white photo of Mayank seated on a stool, performing"],
+      ["spotlight", "On stage", "Close-up of Mayank speaking into a microphone under stage lights"],
+      ["with-performers", "With fellow performers", "Mayank with three other performers in front of a bright poster"],
+      ["with-poet", "Aks-Ghar", "Mayank with a poet in front of the Aks-Ghar sign"],
+      ["aajtak-set", "Aaj Tak Sahitya festival", "Mayank seated at a desk on the Aaj Tak Sahitya festival set"]
+    ];
+    var A = $("#micA"), B = $("#micB"), cap = $("#micCap"), box = $("#mic"); if (!A) return;
+    var cur = 0, front = A, back = B, timer = 0, hold = false, seen = false;
+    function show(i) {
+      cur = (i + P.length) % P.length;
+      back.src = "assets/stage/" + P[cur][0] + ".webp"; back.alt = P[cur][2]; back.removeAttribute("aria-hidden");
+      front.setAttribute("aria-hidden", "true"); front.alt = "";
+      var f = front; front = back; back = f;
+      front.classList.add("on"); back.classList.remove("on");
+      cap.textContent = P[cur][1];
+    }
+    show(0);
+    function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (seen && !hold) show(cur + 1); }, 3400); }
+    new IntersectionObserver(function (en) { seen = en[0].isIntersecting; }, { threshold: 0.3 }).observe(box);
+    on(box, "pointerenter", function () { hold = true; }); on(box, "pointerleave", function () { hold = false; });
+    on($("#micPrev"), "click", function () { show(cur - 1); }); on($("#micNext"), "click", function () { show(cur + 1); });
+    var dlg = $("#lightbox"), lbImg = $("#lbImg"), lbCap = $("#lbCap");
+    on($("#micMain"), "click", function () {
+      var p = P[cur];
+      lbImg.src = "assets/stage/" + p[0] + ".webp"; lbImg.alt = p[2]; lbCap.textContent = p[1];   // small version shows instantly
+      var big = new Image(); big.onload = function () { if (dlg.open && lbImg.alt === p[2]) lbImg.src = big.src; };
+      big.src = "assets/stage/" + p[0] + "-full.webp";
+      if (dlg.showModal) dlg.showModal();
     });
+    loop();
   })();
 
   /* ---------- nav highlight (a link can cover several sections) ---------- */
