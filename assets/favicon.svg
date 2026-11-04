@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal signature monogram: MA"><rect width="64" height="64" fill="#0e5159"/>
-<path d="M8 44 C8 30 11 18 14 12 C14 12 21 33 24 36 C27 33 33 15 35 13 C36 26 37 38 38 46" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M38 46 C40 34 44 20 48 13 C50 24 53 38 57 47 M41 37 C47 34 53 35 59 31" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M5 54 C16 50 24 57 36 53 C46 50 52 52 59 49" fill="none" stroke="#ff5a4e" stroke-width="3.2" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal monogram: MA">
+  <rect width="64" height="64" fill="#0e5159"/>
+  <g transform="translate(4.600 20.500) scale(.58)">
+    <path d="M22 70V30h10l14 24 14-24h10v40H60V47L50 66h-8L32 47v23z" transform="translate(-22 -30)" fill="#ffffff"/>
+    <path d="M74 70L90 30h8l16 40h-10l-3-8H87l-3 8zM89.500 54h9L94 42z" transform="translate(-22 -30)" fill="#ff5a4e" fill-rule="evenodd"/>
+  </g>
+</svg>

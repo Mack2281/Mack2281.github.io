@@ -80,9 +80,10 @@
     grid = { refresh: refresh };
   })();
 
-  /* ---------- intro: the logo draws itself, then the page opens ---------- */
+  /* ---------- intro: the logo assembles, then flies into the nav while a tile wall clears ---------- */
   function intro() {
     var boot = $("#boot"); if (boot) boot.style.display = "none";
+    var mk = $("#navMark"); if (mk) mk.classList.remove("pending");
     if (!hasG || reduce) return;
     var tl = gsap.timeline({ defaults: { ease: "expo.out" } });
     tl.to(".hero-copy .eyebrow", { opacity: 1, y: 0, duration: 0.7 })
@@ -95,20 +96,34 @@
     var boot = $("#boot"), seen = false;
     try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
     if (!boot || !hasG || reduce || seen) { intro(); return; }
+    var mk = $("#navMark"); if (mk) mk.classList.add("pending");
     var wall = $("#bootGrid"), logo = $("#bootLogo");
-    var cols = innerWidth < 700 ? 6 : 12, tile = Math.ceil(innerWidth / cols), rows = Math.ceil(innerHeight / tile);
-    wall.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
-    wall.style.gridAutoRows = tile + "px";
+    var cols = innerWidth < 700 ? 8 : 16, tile = Math.ceil(innerWidth / cols), rows = Math.ceil(innerHeight / tile);
+    wall.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)"; wall.style.gridAutoRows = tile + "px";
     var tiles = [];
     for (var i = 0; i < cols * rows; i++) { var t = document.createElement("i"); wall.appendChild(t); tiles.push(t); }
-    boot.style.background = "transparent";
-    var spread = { amount: 0.7, from: "center", grid: [rows, cols] };
-    var tl = gsap.timeline({ onComplete: function () { try { sessionStorage.setItem("booted", "1"); } catch (e) {} intro(); } });
-    tl.fromTo(logo, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.8)" })
-      .to(logo, { rotate: -6, duration: 0.18, yoyo: true, repeat: 1, ease: "sine.inOut" }, "+=0.05")
-      .to(tiles, { backgroundColor: cssVar("--acc"), duration: 0.2, stagger: spread }, "go")
-      .to(logo, { scale: 1.6, opacity: 0, duration: 0.45, ease: "power2.in" }, "go")
-      .to(tiles, { scale: 0, opacity: 0, duration: 0.4, ease: "power2.in", stagger: spread }, "go+=0.2");
+    gsap.set(logo, { xPercent: -50, yPercent: -50, left: "50%", top: "50%", transform: "none" });
+    gsap.set($$(".lg-br", logo), { strokeDasharray: 1, strokeDashoffset: 1 });
+    gsap.set($$(".lg-d", logo), { scale: 0, opacity: 0 });
+    gsap.set($(".lg-m", logo), { x: -26, opacity: 0 });
+    gsap.set($(".lg-a", logo), { x: 26, opacity: 0 });
+    var done = function () { try { sessionStorage.setItem("booted", "1"); } catch (e) {} intro(); };
+    var tl = gsap.timeline({ onComplete: done });
+    tl.to($$(".lg-br", logo), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.04 }, 0)
+      .to($(".lg-m", logo), { x: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.25)
+      .to($(".lg-a", logo), { x: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.38)
+      .to($$(".lg-d", logo), { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2.4)", stagger: 0.05 }, 0.7)
+      .add(function () {
+        var r = logo.getBoundingClientRect(), n = mk ? mk.getBoundingClientRect() : null;
+        var spread = { amount: 0.55, from: "center", grid: [rows, cols] };
+        gsap.to(tiles, { opacity: 0, scale: 0.4, duration: 0.5, ease: "power2.in", stagger: spread });
+        if (n) {
+          var tx = (n.left + n.width / 2) - (r.left + r.width / 2), ty = (n.top + n.height / 2) - (r.top + r.height / 2);
+          gsap.to(logo, { x: tx, y: ty, scale: n.width / r.width, duration: 0.85, ease: "power3.inOut",
+            "--lg-m": cssVar("--brand"), "--lg-l": cssVar("--brand") });
+        }
+      }, "+=0.55")
+      .to(boot, { opacity: 0, duration: 0.25 }, ">+0.7");
   })();
 
   /* ---------- scroll progress ---------- */
@@ -374,9 +389,11 @@
       var res = run(), ok = res.filter(function (r) { return r.pass; }).length;
       sub.textContent = ok + " of " + res.length + " checks passed";
       list.innerHTML = res.map(function (r) { return '<li class="' + (r.pass ? "pass" : "fail") + '"><b>' + (r.pass ? "Pass" : "Fail") + "</b><div>" + r.name + "<span>" + r.detail + "</span></div></li>"; }).join("");
-      btn.textContent = "Test this page " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
+      btn.textContent = "Live QA report " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
+      var cnt = $("#qaCount"), wd = $("#qaWord"); if (cnt) { cnt.textContent = ok + "/" + res.length; wd.textContent = ok === res.length ? "checks passed, just now" : "checks passed. Open the report to see what failed"; }
     }
-    on(btn, "click", function () { show(); if (dlg.showModal) dlg.showModal(); });
+    function open() { show(); if (dlg.showModal) dlg.showModal(); }
+    on(btn, "click", open); on($("#qaBtn2"), "click", open);
     on(window, "load", function () { setTimeout(show, 1500); });
   })();
 })();
