@@ -308,11 +308,10 @@
     on(dlg, "click", function (e) { if (e.target === dlg) dlg.close(); });
   })();
 
-  /* ---------- nav highlight ---------- */
+  /* ---------- nav highlight (a link can cover several sections) ---------- */
   (function () {
     var links = $$("#links a"), map = {};
-    links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
-    var secs = Object.keys(map).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    links.forEach(function (a) { (a.dataset.sec || a.getAttribute("href").slice(1)).split(" ").forEach(function (id) { map[id] = a; }); });
     var io = new IntersectionObserver(function (en) {
       en.forEach(function (x) {
         if (!x.isIntersecting) return;
@@ -320,7 +319,7 @@
         var a = map[x.target.id]; if (a) a.classList.add("is-on");
       });
     }, { rootMargin: "-40% 0px -55% 0px" });
-    secs.forEach(function (s) { io.observe(s); });
+    Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
   })();
 
   /* ---------- contact form (opens the visitor's mail app) ---------- */
