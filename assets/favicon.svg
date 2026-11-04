@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal logo: the letter M followed by a check mark">
-  <rect width="64" height="64" fill="#08262b"/>
-  <path d="M10 48V16l14 18 14-18v32" fill="none" stroke="#f1faf8" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
-  <path d="M44 35l6 8 10-20" fill="none" stroke="#ff5a4e" stroke-width="6" stroke-linejoin="miter" stroke-linecap="butt"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal monogram: MA">
+  <rect width="64" height="64" fill="#0e5159"/>
+  <path d="M9 43V17l9 12 9-12v26" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="miter" stroke-linecap="butt"/>
+  <path d="M37 43l9-26 9 26M40.300 35h11.400" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="miter" stroke-linecap="butt"/>
+  <rect x="9" y="49" width="46" height="4.500" fill="#ff5a4e"/>
 </svg>

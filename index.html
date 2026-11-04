@@ -31,10 +31,8 @@
 <div class="progress" id="progress" aria-hidden="true"></div>
 
 <div class="boot" id="boot" aria-hidden="true">
-  <svg class="boot-logo" viewBox="0 0 64 64" width="110" height="110">
-    <path class="bm" d="M10 48V16l14 18 14-18v32" fill="none" stroke="currentColor" stroke-width="6"/>
-    <path class="bc" d="M44 35l6 8 10-20" fill="none" stroke="var(--acc)" stroke-width="6"/>
-  </svg>
+  <div class="boot-grid" id="bootGrid"></div>
+  <img class="boot-logo" id="bootLogo" src="assets/favicon.svg" width="96" height="96" alt="">
 </div>
 
 <header class="nav">
@@ -190,11 +188,27 @@
 
   <section class="switch" id="switch">
     <div class="wrap">
-      <p class="eyebrow">An app I built</p>
-      <h2 class="h2">Switch: a job search that runs itself</h2>
-      <p class="lede">It finds postings from email alerts, company pages and job boards, scores how well each one fits you, and tracks every application until the offer. I built it solo with AI agents.</p>
+      <p class="eyebrow">A product I built end to end</p>
+      <h2 class="h2">Switch: finds the right jobs and tracks every application</h2>
+      <p class="lede">Job seekers spend hours re-checking sites, emails and spreadsheets. Switch does that work automatically: it collects postings, scores how well each one fits, and keeps every application moving. I designed, built and tested it solo, working with AI agents.</p>
       <div class="show" id="show">
-        <ul class="show-tabs" id="showTabs" role="tablist" aria-label="Switch screens"></ul>
+        <div class="show-left">
+          <p class="cap-k" id="capK"></p>
+          <h3 class="cap-t" id="capT"></h3>
+          <p class="cap-d" id="capD"></p>
+          <ul class="cap-pts" id="capP"></ul>
+          <div class="show-ctl">
+            <button type="button" id="prev" aria-label="Previous screen">Previous</button>
+            <div class="dots" id="dots"></div>
+            <button type="button" id="next" aria-label="Next screen">Next</button>
+          </div>
+          <ul class="facts-row">
+            <li><b>1,500+</b>automated tests</li>
+            <li><b>Web and Android</b>one codebase</li>
+            <li><b>Solo</b>design to release</li>
+          </ul>
+          <p class="cap-n">Design screens with sample data. The source code is private. Want to know more? <a href="https://www.linkedin.com/in/mayank-agrawal-61166936a" target="_blank" rel="noopener">Message me on LinkedIn</a>.</p>
+        </div>
         <div class="devices">
           <div class="browser" aria-hidden="true">
             <div class="bar"><i></i><i></i><i></i><span>switch app</span></div>
@@ -204,11 +218,6 @@
             <div class="notch" aria-hidden="true"></div>
             <div class="screen" id="screen"></div>
           </div>
-        </div>
-        <div class="show-cap">
-          <p class="cap-t" id="capT"></p>
-          <p class="cap-d" id="capD"></p>
-          <p class="cap-n">Design screens with sample data. Want to know more? <a href="https://www.linkedin.com/in/mayank-agrawal" target="_blank" rel="noopener">Message me on LinkedIn</a>.</p>
         </div>
       </div>
     </div>
@@ -223,6 +232,12 @@
         </a>
         <a class="proj two" href="case-study.html" data-tilt>
           <div class="proj-body"><h3>The AI tester, explained</h3><p>How the AI tester is designed, in plain terms: what it does and why it can be trusted.</p><span class="go">Read the case study</span></div>
+        </a>
+        <a class="proj five" href="https://github.com/Mack2281/selenium-pytest-framework" target="_blank" rel="noopener" data-tilt>
+          <div class="proj-body"><h3>Selenium and PyTest framework</h3><p>The same approach in Python: page objects, data-driven tests and screenshots on failure. 12 tests, all passing.</p><span class="go">View the code</span></div>
+        </a>
+        <a class="proj six" href="https://github.com/Mack2281/ai-testcase-generator" target="_blank" rel="noopener" data-tilt>
+          <div class="proj-body"><h3>Test case generator</h3><p>A command-line tool that turns a written requirement into test cases with an AI model. A person approves the assumptions first, and every reply is checked before it is used.</p><span class="go">View the code</span></div>
         </a>
         <a class="proj three" href="https://github.com/Mack2281/ai-test-automation-tools" target="_blank" rel="noopener" data-tilt>
           <div class="proj-body"><h3>AI test automation tools</h3><p>A hand-picked list of open-source tools that use AI to test software.</p><span class="go">Browse the list</span></div>
@@ -314,7 +329,7 @@
         <p class="lede">Hiring, or building something? Send a note about what you need.</p>
         <ul class="ext">
           <li><a href="mailto:mack22081@gmail.com">mack22081@gmail.com</a></li>
-          <li><a href="https://www.linkedin.com/in/mayank-agrawal" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://www.linkedin.com/in/mayank-agrawal-61166936a" target="_blank" rel="noopener">LinkedIn</a></li>
           <li><a href="https://github.com/Mack2281" target="_blank" rel="noopener">GitHub</a></li>
         </ul>
       </div>

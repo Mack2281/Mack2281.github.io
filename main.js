@@ -110,10 +110,20 @@
     var boot = $("#boot"), seen = false;
     try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
     if (!boot || !hasG || reduce || seen) { intro(); return; }
-    var tl = gsap.timeline({ onComplete: function () { try { sessionStorage.setItem("booted", "1"); } catch (e) {} } });
-    tl.to(".bm", { strokeDashoffset: 0, duration: 0.55, ease: "power2.out" })
-      .to(".bc", { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, "-=0.05")
-      .to(boot, { yPercent: -100, duration: 0.7, ease: "expo.inOut", delay: 0.25, onComplete: intro });
+    var wall = $("#bootGrid"), logo = $("#bootLogo");
+    var cols = innerWidth < 700 ? 6 : 12, tile = Math.ceil(innerWidth / cols), rows = Math.ceil(innerHeight / tile);
+    wall.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
+    wall.style.gridAutoRows = tile + "px";
+    var tiles = [];
+    for (var i = 0; i < cols * rows; i++) { var t = document.createElement("i"); wall.appendChild(t); tiles.push(t); }
+    boot.style.background = "transparent";
+    var spread = { amount: 0.7, from: "center", grid: [rows, cols] };
+    var tl = gsap.timeline({ onComplete: function () { try { sessionStorage.setItem("booted", "1"); } catch (e) {} intro(); } });
+    tl.fromTo(logo, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.8)" })
+      .to(logo, { rotate: -6, duration: 0.18, yoyo: true, repeat: 1, ease: "sine.inOut" }, "+=0.05")
+      .to(tiles, { backgroundColor: cssVar("--acc"), duration: 0.2, stagger: spread }, "go")
+      .to(logo, { scale: 1.6, opacity: 0, duration: 0.45, ease: "power2.in" }, "go")
+      .to(tiles, { scale: 0, opacity: 0, duration: 0.4, ease: "power2.in", stagger: spread }, "go+=0.2");
   })();
 
   /* ---------- scroll progress ---------- */
@@ -143,7 +153,7 @@
 
   /* ---------- reveal on scroll ---------- */
   (function () {
-    var els = $$(".bento .cell, .exp-list li, .entry, .proj, .sg, .step, .show-tabs, .devices, .show-cap, .verify, .award, .h2, .lede");
+    var els = $$(".bento .cell, .exp-list li, .entry, .proj, .sg, .step, .show-left, .devices, .verify, .award, .h2, .lede");
     els.forEach(function (e) { e.classList.add("reveal"); });
     if (!("IntersectionObserver" in window) || reduce) { els.forEach(function (e) { e.classList.add("in"); }); return; }
     var io = new IntersectionObserver(function (en) {
@@ -224,27 +234,26 @@
   /* ---------- Switch screens: phone + browser slideshow ---------- */
   (function () {
     var S = [
-      ["open", "Open the door", "A clean start. One tap and you are in."],
-      ["dashboard", "Your day at a glance", "New matches, applications in progress and your best opportunities."],
-      ["jobs", "Every job found", "Postings from email alerts, company pages and job boards in one list."],
-      ["triage", "Pursue or skip", "Review new jobs one by one. Every card shows why it matches."],
-      ["detail", "Why it matches", "The role, the requirements and an honest match score."],
-      ["apply", "Application ready", "A tailored resume, cover letter and answers, ready to send."],
-      ["tracker", "Track every application", "From applied to interview to offer, nothing gets lost."],
-      ["followups", "Follow-ups", "Reminders and drafted messages so no reply is forgotten."],
-      ["interviews", "Interview prep", "Practice questions and a prep checklist for each interview."],
-      ["analytics", "What is working", "Trends in your search, where jobs come from and how matches score."],
-      ["contacts", "People who can help", "Recruiters and hiring managers at the companies you want."],
-      ["assistant", "Ask the assistant", "Ask anything about your search in plain language."],
-      ["sources", "Source health", "Check that every job source is running and finding jobs."]
+      ["open", "Open the door", "A clean start. One tap and you are in.", ["Sign in with Google", "No long forms to get started"]],
+      ["dashboard", "Your day at a glance", "New matches, applications in progress and your best opportunities.", ["Jobs found, new today, pursuing and top score", "The strongest matches come first"]],
+      ["jobs", "Every job found", "Postings from email alerts, company pages and job boards in one list.", ["Filter by new, pursuing, skipped or watching", "Search by role or company"]],
+      ["triage", "Pursue or skip", "Review new jobs one by one. Every card shows why it matches.", ["One tap to pursue or skip, with undo", "Separate tabs for new, watched and reviewed"]],
+      ["detail", "Why it matches", "The role, the requirements and an honest match score.", ["The reasons behind every score", "Tabs for company, contacts, documents and chat"]],
+      ["apply", "Application ready", "A tailored resume, cover letter and answers, ready to send.", ["Documents tailored to each role", "It never submits anything for you"]],
+      ["tracker", "Track every application", "From applied to interview to offer, nothing gets lost.", ["Every stage in one place", "A follow-up date on each card"]],
+      ["followups", "Follow-ups", "Reminders and drafted messages so no reply is forgotten.", ["Due today, upcoming and done", "A draft message in one tap"]],
+      ["interviews", "Interview prep", "Practice questions and a prep checklist for each interview.", ["Upcoming and past interviews", "Mock interview and tips"]],
+      ["analytics", "What is working", "Trends in your search, where jobs come from and how matches score.", ["Search activity over time", "Which sources bring the best jobs"]],
+      ["contacts", "People who can help", "Recruiters and hiring managers at the companies you want.", ["Contacts grouped by company", "Who you last spoke to and when"]],
+      ["assistant", "Ask the assistant", "Ask anything about your search in plain language.", ["Suggested questions to start", "Answers based on your own data"]],
+      ["sources", "Source health", "Check that every job source is running and finding jobs.", ["Email alerts, job boards and manual adds", "A health status for each source"]]
     ];
-    var tabs = $("#showTabs"), screen = $("#screen"), bw = $("#bw"); if (!tabs) return;
+    var screen = $("#screen"), bw = $("#bw"), dots = $("#dots"); if (!screen) return;
     var track = document.createElement("div"); track.className = "bw-track"; bw.appendChild(track);
-    var tabBtns = [], pImgs = [], bImgs = [], cur = 0, timer = 0, idleTimer = 0, userHold = false, inView = false;
+    var dotBtns = [], pImgs = [], bImgs = [], cur = 0, timer = 0, idleTimer = 0, userHold = false, inView = false;
     S.forEach(function (s, i) {
-      var li = document.createElement("li"), b = document.createElement("button");
-      b.type = "button"; b.setAttribute("role", "tab"); b.textContent = s[1]; b.setAttribute("aria-selected", "false");
-      b.addEventListener("click", function () { go(i, true); }); li.appendChild(b); tabs.appendChild(li); tabBtns.push(b);
+      var d = document.createElement("button"); d.type = "button"; d.setAttribute("aria-label", "Screen " + (i + 1) + ": " + s[1]);
+      d.addEventListener("click", function () { go(i, true); }); dots.appendChild(d); dotBtns.push(d);
       var p = new Image(); p.src = "switch/img/" + s[0] + ".webp"; p.alt = ""; p.width = 720; p.height = 1680; p.loading = i < 2 ? "eager" : "lazy"; screen.appendChild(p); pImgs.push(p);
       var q = new Image(); q.src = p.src; q.alt = ""; q.loading = "lazy"; q.addEventListener("click", function () { go(i, true); }); track.appendChild(q); bImgs.push(q);
     });
@@ -254,18 +263,23 @@
     }
     function go(i, byUser) {
       cur = (i + S.length) % S.length;
-      tabBtns.forEach(function (b, k) { b.setAttribute("aria-selected", String(k === cur)); });
+      dotBtns.forEach(function (b, k) { if (k === cur) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
       pImgs.forEach(function (m, k) { m.classList.toggle("on", k === cur); });
       bImgs.forEach(function (m, k) { m.classList.toggle("on", k === cur); });
+      $("#capK").textContent = "Screen " + (cur + 1) + " of " + S.length;
       $("#capT").textContent = S[cur][1]; $("#capD").textContent = S[cur][2];
+      $("#capP").innerHTML = S[cur][3].map(function (t) { return "<li>" + t + "</li>"; }).join("");
+      if (!reduce) { [$("#capT"), $("#capD"), $("#capP")].forEach(function (el) { el.classList.remove("cap-anim"); void el.offsetWidth; el.classList.add("cap-anim"); }); }
       place();
       if (byUser) { userHold = true; clearTimeout(idleTimer); idleTimer = setTimeout(function () { userHold = false; }, 9000); }
     }
-    function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (inView && !userHold) go(cur + 1); }, 3400); }
+    function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (inView && !userHold) go(cur + 1); }, 3600); }
     var show = $("#show");
     new IntersectionObserver(function (en) { inView = en[0].isIntersecting; }, { threshold: 0.25 }).observe(show);
     on(show, "pointerenter", function () { userHold = true; });
     on(show, "pointerleave", function () { clearTimeout(idleTimer); idleTimer = setTimeout(function () { userHold = false; }, 1500); });
+    on($("#prev"), "click", function () { go(cur - 1, true); });
+    on($("#next"), "click", function () { go(cur + 1, true); });
     var sx = 0; on($(".phone"), "pointerdown", function (e) { sx = e.clientX; });
     on($(".phone"), "pointerup", function (e) { var d = e.clientX - sx; if (Math.abs(d) > 40) go(cur + (d < 0 ? 1 : -1), true); });
     on(window, "resize", place); on(window, "load", place);
