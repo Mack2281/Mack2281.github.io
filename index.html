@@ -39,7 +39,8 @@
 <header class="nav">
   <a class="mark" id="navMark" href="#top" aria-label="Mayank Agrawal, home"><svg viewBox="0 0 136 100" aria-hidden="true"><use href="#logo"/></svg></a>
   <nav class="links" id="links" aria-label="Primary">
-    <a class="keep" href="#results" data-sec="results expertise">Impact</a>
+    <a href="#about" data-sec="statement about">About</a>
+    <a class="keep" href="#results" data-sec="results">Impact</a>
     <a class="keep" href="#agent" data-sec="agent switch work">Projects</a>
     <a class="keep" href="#path" data-sec="path">Experience</a>
     <a href="#skills" data-sec="skills">Skills</a>
@@ -83,22 +84,23 @@
     </div>
   </section>
 
-  <section class="qa-band" id="qa" aria-labelledby="qa-h">
-    <div class="wrap qa-grid">
-      <div>
-        <h2 class="h2" id="qa-h">This page tests itself.</h2>
-        <p class="qa-big">These checks run in your browser, on this page, right now. <mark>They are the same kind of checks I would add to a release.</mark></p>
-        <p class="qa-why">I am a QA engineer, so instead of only telling you I care about quality, I built the checks into this page.</p>
-      </div>
-      <div class="qa-card">
-        <p class="qa-count"><b id="qaCount">...</b><span id="qaWord">running the checks</span></p>
-        <button class="btn" id="qaBtn2" type="button">Open the live QA report</button>
-      </div>
-    </div>
-  </section>
-
   <section class="statement" id="statement">
     <div class="wrap"><p class="state" id="state">Every app you use was tested before it reached you. My job is to try to break it first, so you never notice anything went wrong.</p></div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="wrap about-grid">
+      <h2 class="h2">About me</h2>
+      <div>
+        <p class="about-text">I'm Mayank, a QA engineer from Gurgaon. For 3.5 years I have been the person who makes sure releases work before customers ever see them. I like explaining what I find in plain words, and I enjoy mentoring, interviewing and speaking. Outside work, I perform at open mics.</p>
+        <ul class="about-facts">
+          <li><b>Gurgaon, India</b>based</li>
+          <li><b>3.5 years</b>in QA</li>
+          <li><b>10+ universities</b>where I have given talks</li>
+          <li><b>Open mics</b>on the side</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section class="results" id="results">
@@ -135,20 +137,6 @@
     </div>
   </section>
 
-  <section class="expertise" id="expertise">
-    <div class="wrap">
-      <h2 class="h2">What I do</h2>
-      <ul class="exp-list">
-        <li><h3>Automated testing</h3><p>I write programs that test software on their own, so every release is checked the same careful way. Tools: Playwright and Selenium.</p></li>
-        <li><h3>Running releases</h3><p>I own the final checks before new versions go live, on a strict two-week schedule, and speak with the client every day.</p></li>
-        <li><h3>Speed and reliability</h3><p>I check that apps stay fast and correct when many people use them at once, and that their data connections work.</p></li>
-        <li><h3>Setting the standard</h3><p>I define what "good enough to ship" means and help a growing team follow it.</p></li>
-        <li><h3>AI-assisted testing</h3><p>I designed an AI that reads a request and the app's code, finds what is unclear, writes the tests and runs them. I approve every stage. <a href="#agent">See how it works</a></p></li>
-        <li><h3>Hiring and mentoring</h3><p>80+ interviews, 20+ new joiners trained and talks at 10+ universities.</p></li>
-      </ul>
-    </div>
-  </section>
-
   <section class="agent" id="agent">
     <div class="agent-pin">
       <div class="wrap agent-grid">
@@ -162,6 +150,7 @@
             <li class="step" data-step="3"><h3>It writes the tests</h3><p>A summary, a test plan, an effort estimate and the test cases. I approve each one before it moves on.</p></li>
             <li class="step" data-step="4"><h3>It runs them in a browser</h3><p>It tests the app like a person would, takes screenshots as proof and reports any bugs to me.</p></li>
           </ol>
+          <p class="lesson"><b>What went wrong first.</b> Early on, the test steps it wrote were too vague to run. Giving it the product's own help documentation and rewriting its skills (the written procedures it follows) fixed that.</p>
           <p class="fine"><a href="case-study.html">Read the case study</a></p>
         </div>
         <figure class="diagram" aria-label="Diagram: one AI tester working through four jobs">
@@ -327,6 +316,11 @@
         <p class="eyebrow">Open to senior QA roles</p>
         <h2 class="h2 big">Let's talk.</h2>
         <p class="lede">Hiring, or building something? Send a note about what you need.</p>
+        <ul class="avail">
+          <li><b>Based in</b>Gurgaon, India</li>
+          <li><b>Looking for</b>Senior QA and SDET roles, including AI-assisted testing</li>
+          <li><b>Experience with</b>US-based clients</li>
+        </ul>
         <ul class="ext">
           <li><a href="mailto:mack22081@gmail.com">mack22081@gmail.com</a></li>
           <li><a href="https://www.linkedin.com/in/mayank-agrawal-61166936a" target="_blank" rel="noopener">LinkedIn</a></li>
@@ -348,7 +342,7 @@
     </div>
     <footer class="foot wrap">
       <p>Mayank Agrawal, Gurgaon, India</p>
-      <p>Designed and written by hand.</p>
+      <p>Designed and written by hand. This page tests itself: <button type="button" class="linkbtn" id="qaFoot">open the live QA report</button>.</p>
     </footer>
   </section>
 </main>

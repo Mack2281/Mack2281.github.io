@@ -218,7 +218,7 @@
     if (reduce || !hasG) { set(4); return; }
     var mm = gsap.matchMedia();
     mm.add("(min-width: 861px)", function () {
-      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top", end: "+=1100", pin: true, scrub: true,
+      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top", end: "+=800", pin: true, scrub: true,
         onUpdate: function (s) { set(Math.min(4, Math.floor(s.progress * 5))); } });
     });
     mm.add("(max-width: 860px)", function () {
@@ -392,7 +392,7 @@
       var cnt = $("#qaCount"), wd = $("#qaWord"); if (cnt) { cnt.textContent = ok + "/" + res.length; wd.textContent = ok === res.length ? "checks passed, just now" : "checks passed. Open the report to see what failed"; }
     }
     function open() { show(); if (dlg.showModal) dlg.showModal(); }
-    on(btn, "click", open); on($("#qaBtn2"), "click", open);
+    on(btn, "click", open); on($("#qaFoot"), "click", open);
     on(window, "load", function () { setTimeout(show, 1500); });
   })();
 })();

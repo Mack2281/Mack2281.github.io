@@ -363,18 +363,23 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 .cap-n{font-size:.92rem;color:var(--mut);border-top:1px solid var(--line);padding-top:10px}
 .cap-n a{color:var(--acc-text);font-weight:650;text-underline-offset:3px}
 
-/* live QA report band: the reason the page tests itself, impossible to miss */
-.qa-band{background:var(--brand);color:var(--on-brand);padding:clamp(40px,5vw,64px) 0}
-.qa-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.7fr);gap:clamp(24px,5vw,64px);align-items:center}
-.qa-band .h2{color:var(--on-brand);margin-bottom:14px}
-.qa-big{font-size:clamp(1.25rem,2.3vw,1.85rem);line-height:1.35;font-weight:600;letter-spacing:-.02em;max-width:34ch}
-mark{background:var(--acc);color:var(--acc-ink);padding:.04em .3em;font-weight:750;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.qa-why{margin-top:14px;max-width:52ch;opacity:.92;font-size:1.05rem}
-.qa-card{background:var(--card);color:var(--ink);padding:clamp(18px,2.4vw,28px);display:grid;gap:16px;border:1px solid var(--line)}
-.qa-count{display:flex;align-items:baseline;gap:10px}
-.qa-count b{font-size:clamp(2.6rem,5vw,4rem);letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
-.qa-count span{color:var(--mut);font-weight:600;line-height:1.25}
-.qa-card .btn{width:100%}
 .qa-lead{font-size:clamp(1.15rem,2.2vw,1.45rem);font-weight:650;line-height:1.35;letter-spacing:-.01em;padding:18px 20px;background:var(--brand);color:var(--on-brand);border-left:8px solid var(--acc);margin-bottom:10px}
 .qa-lead-why{color:var(--mut);margin-bottom:16px}
-@media (max-width:860px){.qa-grid{grid-template-columns:1fr}.mark{width:56px;height:41px}}
+@media (max-width:860px){.mark{width:56px;height:41px}}
+
+/* about */
+.statement{padding:clamp(48px,7vw,96px) 0 clamp(16px,3vw,32px)}
+.about{padding:clamp(24px,4vw,48px) 0 var(--sec)}
+.about-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,9fr);gap:clamp(16px,4vw,48px);align-items:start}
+.about .h2{font-size:clamp(1.6rem,2.6vw,2.1rem);margin:0}
+.about-text{font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.5;max-width:46ch;font-weight:500;letter-spacing:-.01em}
+.about-facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.about-facts li{background:var(--bg2);border:1px solid var(--line);padding:10px 14px;font-size:.85rem;color:var(--mut);line-height:1.2}
+.about-facts b{display:block;color:var(--ink);font-size:1rem;margin-bottom:2px;letter-spacing:-.01em}
+.lesson{margin:0 0 14px;padding:12px 14px;border-left:4px solid var(--acc);background:var(--card);font-size:.95rem;max-width:52ch}
+.lesson b{color:var(--acc-text)}
+.avail{display:grid;gap:8px;margin:18px 0 6px;max-width:46ch}
+.avail li{padding:10px 14px;background:var(--card);border:1px solid var(--line);font-weight:550}
+.avail b{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc-text);margin-bottom:2px}
+.linkbtn{background:none;border:0;padding:0;color:var(--acc-text);font-weight:650;text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+@media (max-width:860px){.about-grid{grid-template-columns:1fr}}
