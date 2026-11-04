@@ -23,7 +23,7 @@
 <link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <script>
-  (function(){var r=document.documentElement;try{var t=localStorage.getItem("theme"),p=localStorage.getItem("palette");if(t==="light"||t==="dark")r.dataset.theme=t;if(p)r.dataset.palette=p;}catch(e){}r.classList.add("js");})();
+  (function(){var r=document.documentElement;try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")r.dataset.theme=t;}catch(e){}r.classList.add("js");})();
 </script>
 </head>
 <body>
@@ -48,21 +48,8 @@
     <a class="keep" href="#contact">Contact</a>
   </nav>
   <div class="tools">
-    <button class="btn-ghost" id="qaBtn" type="button" title="Run live checks on this page">Page check</button>
-    <div class="pal-wrap">
-      <button class="btn-ghost sq" id="palBtn" type="button" aria-label="Choose colors" aria-expanded="false" aria-controls="palMenu"><span class="pal-dot" aria-hidden="true"></span></button>
-      <div class="pal-menu" id="palMenu" hidden>
-        <p>Colors</p>
-        <div class="pal-grid" role="group" aria-label="Color palettes">
-          <button type="button" data-p="teal" aria-label="Teal and coral" style="--a:#0e5159;--b:#ff5a4e"></button>
-          <button type="button" data-p="cobalt" aria-label="Cobalt and amber" style="--a:#1d3fbf;--b:#ffb020"></button>
-          <button type="button" data-p="forest" aria-label="Forest and gold" style="--a:#1f5d3b;--b:#e9b020"></button>
-          <button type="button" data-p="ember" aria-label="Charcoal and orange" style="--a:#2a2623;--b:#ff6a1a"></button>
-          <button type="button" data-p="rose" aria-label="Navy and rose" style="--a:#1b2a4a;--b:#ff4f7b"></button>
-        </div>
-        <button type="button" class="theme-row" id="themeBtn">Switch light and dark</button>
-      </div>
-    </div>
+    <button class="btn-ghost" id="qaBtn" type="button" title="Run live quality checks on this page">Test this page</button>
+    <button class="btn-ghost sq" id="themeBtn" type="button" aria-label="Switch between light and dark theme"><span class="theme-glyph" aria-hidden="true"></span></button>
   </div>
 </header>
 
@@ -243,7 +230,7 @@
           <div class="proj-body"><h3>AI test automation tools</h3><p>A hand-picked list of open-source tools that use AI to test software.</p><span class="go">Browse the list</span></div>
         </a>
         <a class="proj four" href="https://github.com/Mack2281/Mack2281.github.io" target="_blank" rel="noopener" data-tilt>
-          <div class="proj-body"><h3>This website</h3><p>Hand-written, and tested like any product. Press Page check at the top to run its checks live.</p><span class="go">View the code</span></div>
+          <div class="proj-body"><h3>This website</h3><p>Hand-written, and tested like any product. Press Test this page at the top to run its checks live.</p><span class="go">View the code</span></div>
         </a>
       </div>
     </div>
@@ -359,12 +346,12 @@
   <p id="lbCap"></p>
 </dialog>
 
-<dialog id="qaDlg" aria-label="Page check">
+<dialog id="qaDlg" aria-label="Test this page">
   <form method="dialog"><button class="close" aria-label="Close">Close</button></form>
+  <p class="qa-lead">These checks run in your browser, on this page, right now. They are the same kind of checks I would add to a release.</p>
   <h2 class="qa-h">This page, tested just now</h2>
   <p class="qa-sub" id="qaSub"></p>
   <ul class="qa-list" id="qaList"></ul>
-  <p class="qa-note">These checks run in your browser, on this page, right now. They are the same kind of checks I would add to a release.</p>
 </dialog>
 
 <script src="vendor/gsap.min.js"></script>

@@ -14,28 +14,13 @@
   var grid = null;
   function cssVar(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
   function themeColor() { var m = $('meta[name="theme-color"]'); if (m) m.setAttribute("content", cssVar("--bg")); }
-  var palBtn = $("#palBtn"), palMenu = $("#palMenu");
-  function setPal(p) {
-    root.dataset.palette = p;
-    try { localStorage.setItem("palette", p); } catch (e) {}
-    $$("#palMenu [data-p]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.p === p)); });
-    if (grid) grid.refresh();
-  }
-  on(palBtn, "click", function () {
-    var open = palMenu.hidden; palMenu.hidden = !open; palBtn.setAttribute("aria-expanded", String(open));
-  });
-  document.addEventListener("click", function (e) {
-    if (!palMenu.hidden && !e.target.closest(".pal-wrap")) { palMenu.hidden = true; palBtn.setAttribute("aria-expanded", "false"); }
-  });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !palMenu.hidden) { palMenu.hidden = true; palBtn.focus(); } });
-  $$("#palMenu [data-p]").forEach(function (b) { on(b, "click", function () { setPal(b.dataset.p); }); });
   on($("#themeBtn"), "click", function () {
     var next = root.dataset.theme === "dark" ? "light" : "dark";
     root.dataset.theme = next;
     try { localStorage.setItem("theme", next); } catch (e) {}
     themeColor(); if (grid) grid.refresh();
   });
-  setPal(root.dataset.palette || "teal"); themeColor();
+  themeColor();
 
   /* ---------- hero grid of "checks" (canvas) ---------- */
   (function () {
@@ -370,7 +355,7 @@
       add("Every form field has a label", unl.length === 0, fields.length + " fields checked");
       add("Page language is declared", !!root.lang, "Language: " + (root.lang || "missing"));
       var els = $$("main *, header *").filter(function (el) {
-        if (el.closest("dialog") || el.closest("svg") || el.closest(".pal-menu") || !el.offsetParent) return false;
+        if (el.closest("dialog") || el.closest("svg") || !el.offsetParent) return false;
         return Array.prototype.some.call(el.childNodes, function (n) { return n.nodeType === 3 && n.textContent.trim().length > 1; });
       });
       var fails = [], worst = 99;
@@ -389,7 +374,7 @@
       var res = run(), ok = res.filter(function (r) { return r.pass; }).length;
       sub.textContent = ok + " of " + res.length + " checks passed";
       list.innerHTML = res.map(function (r) { return '<li class="' + (r.pass ? "pass" : "fail") + '"><b>' + (r.pass ? "Pass" : "Fail") + "</b><div>" + r.name + "<span>" + r.detail + "</span></div></li>"; }).join("");
-      btn.textContent = "Page check " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
+      btn.textContent = "Test this page " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
     }
     on(btn, "click", function () { show(); if (dlg.showModal) dlg.showModal(); });
     on(window, "load", function () { setTimeout(show, 1500); });
