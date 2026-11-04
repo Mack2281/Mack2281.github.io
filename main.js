@@ -308,6 +308,17 @@
     on(dlg, "click", function (e) { if (e.target === dlg) dlg.close(); });
   })();
 
+  /* ---------- open-mic photos open in the same viewer ---------- */
+  (function () {
+    var dlg = $("#lightbox"), img = $("#lbImg"), cap = $("#lbCap");
+    $$(".shot").forEach(function (b) {
+      on(b, "click", function () {
+        img.src = b.dataset.full; img.alt = b.querySelector("img").alt; cap.textContent = b.dataset.title;
+        if (dlg.showModal) dlg.showModal(); else window.open(b.dataset.full, "_blank");
+      });
+    });
+  })();
+
   /* ---------- nav highlight (a link can cover several sections) ---------- */
   (function () {
     var links = $$("#links a"), map = {};

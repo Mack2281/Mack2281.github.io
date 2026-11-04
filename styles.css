@@ -383,3 +383,14 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 .avail b{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--acc-text);margin-bottom:2px}
 .linkbtn{background:none;border:0;padding:0;color:var(--acc-text);font-weight:650;text-decoration:underline;text-underline-offset:3px;font-size:inherit}
 @media (max-width:860px){.about-grid{grid-template-columns:1fr}}
+
+/* open-mic photo strip */
+.about-grid>div{min-width:0}
+.reel-wrap{margin-top:26px}
+.reel-note{font-size:.9rem;color:var(--mut);margin-bottom:10px}
+.reel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:12px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.reel li{flex:0 0 auto;scroll-snap-align:start}
+.shot{display:block;padding:0;border:0;background:var(--bg2);height:clamp(260px,30vw,360px);overflow:hidden;transition:transform .35s var(--ease)}
+.shot img{height:100%;width:auto;display:block;transition:transform .8s var(--ease)}
+.shot:hover img{transform:scale(1.05)}
+.shot:hover{transform:translateY(-3px)}
