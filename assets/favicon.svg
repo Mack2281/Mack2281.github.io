@@ -1,6 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal monogram: MA">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mayank Agrawal logo: MA inside viewfinder corners">
   <rect width="64" height="64" fill="#0e5159"/>
-  <g transform="translate(4.600 20.500) scale(.58)">
+  <g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square">
+    <path d="M7 17V7h10M47 7h10v10M7 47v10h10M47 57h10V47"/>
+  </g>
+  <g transform="translate(9 22) scale(.5)">
     <path d="M22 70V30h10l14 24 14-24h10v40H60V47L50 66h-8L32 47v23z" transform="translate(-22 -30)" fill="#ffffff"/>
     <path d="M74 70L90 30h8l16 40h-10l-3-8H87l-3 8zM89.500 54h9L94 42z" transform="translate(-22 -30)" fill="#ff5a4e" fill-rule="evenodd"/>
   </g>
