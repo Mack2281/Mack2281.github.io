@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-palette="teal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case study: an AI QA teammate | Mayank Agrawal</title>
+<meta name="description" content="How I designed an AI tester that takes a ticket to executed, evidence-backed test cases, with a person approving every stage.">
+<link rel="canonical" href="https://mack2281.github.io/case-study.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var r=document.documentElement;try{var t=localStorage.getItem("theme"),p=localStorage.getItem("palette");if(t==="light"||t==="dark")r.dataset.theme=t;if(p)r.dataset.palette=p;}catch(e){}r.classList.add("js");})();</script>
+</head>
+<body>
+<a class="skip" href="#story">Skip to content</a>
+<header class="nav">
+  <a class="mark" href="index.html" aria-label="Mayank Agrawal, home"><img src="assets/favicon.svg" width="40" height="40" alt=""></a>
+  <nav class="links" aria-label="Primary">
+    <a class="keep" href="index.html">Back to portfolio</a>
+  </nav>
+  <div class="tools">
+    <button class="btn-ghost sq" id="themeBtn" type="button" aria-label="Switch between light and dark theme"><span class="theme-glyph" aria-hidden="true"></span></button>
+  </div>
+</header>
+
+<main id="story">
+  <section class="cs-hero">
+    <div class="wrap narrow">
+      <p class="eyebrow">Case study</p>
+      <h1>An AI tester that goes from a ticket to proven test results</h1>
+      <p class="hero-sub">I designed my company's first AI-powered QA agent. It prepares the testing for a new feature and runs it, while a person approves every stage. Testing starts 70% faster and the paperwork shrinks by 85%.</p>
+    </div>
+  </section>
+
+  <section class="cs">
+    <div class="wrap narrow prose">
+      <h2>The problem</h2>
+      <p>Before any test could run, every request for a new feature went through the same slow routine.</p>
+      <ol class="num-list">
+        <li>Someone read the request and worked out what it really meant.</li>
+        <li>Someone hunted for gaps and unclear points, then chased answers.</li>
+        <li>Someone wrote a test plan, an effort estimate and the test cases by hand.</li>
+        <li>Someone loaded the cases into the test tool, ran them and collected proof.</li>
+      </ol>
+      <p>The first three steps were repetitive and varied from person to person. They also produced a lot of documents.</p>
+
+      <h2>What I built</h2>
+      <p>An agent that takes a ticket number and carries the work as far as executed tests. People stay in charge of every judgment call. It runs inside Claude Code and is made of a few simple parts.</p>
+      <ul class="parts">
+        <li><strong>Commands</strong> for the main jobs: write tests from a ticket, upload them to the test tool, run them in a browser.</li>
+        <li><strong>Helper agents</strong> for the autonomous work: gathering requirements, planning, investigating production bugs, organising evidence.</li>
+        <li><strong>Written procedures</strong> the agent follows, such as how to find gaps or how to estimate effort.</li>
+        <li><strong>Scripts</strong> that produce the documents in a fixed format, so the output never depends on the model's mood.</li>
+        <li><strong>Connections</strong> to the ticket system and to a real browser, so it uses real tools instead of guessing.</li>
+      </ul>
+
+      <h2>How a ticket moves through it</h2>
+      <ol class="flow">
+        <li><b>Ask</b><span>It asks two to five short questions to understand the scope.</span></li>
+        <li><b>Read</b><span>It reads the ticket, the app's code, the product documents and the change history.</span></li>
+        <li><b>Find gaps</b><span>It works out what is missing from the code first, and only asks a person about real business questions.</span></li>
+        <li class="gate"><b>Summary</b><span>A plain-English summary of the scope. A person approves it.</span></li>
+        <li class="gate"><b>Test plan</b><span>Scope, approach and risks in a document. A person approves it.</span></li>
+        <li class="gate"><b>Estimate</b><span>An effort workbook with three-point estimates. A person approves it.</span></li>
+        <li class="gate"><b>Test cases</b><span>Full steps and expected results, including negative, boundary and role-based cases. A person approves them.</span></li>
+        <li><b>Hand over</b><span>A file ready for the test tool. It stops here.</span></li>
+      </ol>
+      <p>Uploading to the test tool and running the tests in a browser are separate commands that a person chooses to run. They are not chained on, because browser runs need real logins and an upload writes to another system.</p>
+
+      <h2>Decisions I would defend</h2>
+      <dl class="decisions">
+        <dt>Code first, questions second</dt>
+        <dd>The agent works out how the app behaves from its code, and only bothers people with genuine business questions. Every requirement points back to evidence in the code.</dd>
+        <dt>Approvals are real stops</dt>
+        <dd>The summary, plan, estimate and test cases each need an explicit yes, even if someone asks for "just the test cases quickly".</dd>
+        <dt>Double confirmation before writing to the ticket system</dt>
+        <dd>It drafts the comment, a person approves the words, then it asks once more before posting. Reading is free.</dd>
+        <dt>Passwords stay in memory</dt>
+        <dd>Logins are never written to a file, a report or a screenshot.</dd>
+        <dt>Scripts over free text</dt>
+        <dd>Documents come from generators with enforced formats, such as valid priorities and no repeated login steps.</dd>
+        <dt>Plain language</dt>
+        <dd>Summaries are written from a tester's point of view, so non-engineers can approve them.</dd>
+        <dt>A person can steer a run</dt>
+        <dd>While it tests in the browser you can type "skip this test" or "click Next, not Sign In". It stops, follows, and your instruction wins.</dd>
+      </dl>
+
+      <h2>What it produces</h2>
+      <ul class="parts">
+        <li>A test plan document and an effort workbook with the estimate calculations.</li>
+        <li>Test cases covering normal, negative, boundary and role-based situations.</li>
+        <li>A file ready to load into the test tool.</li>
+        <li>An execution report with screenshots taken at the checks that matter and at failures. Bugs are reported in the chat and never filed unless someone asks.</li>
+      </ul>
+
+      <h2>Results</h2>
+      <div class="cs-stats">
+        <div><b>70%</b><span>faster to start testing a new feature</span></div>
+        <div><b>85%</b><span>less documentation effort</span></div>
+      </div>
+      <p class="fine">Figures from my resume, measured on the project.</p>
+
+      <p class="cs-end"><a class="btn" href="index.html#work">Back to portfolio</a></p>
+    </div>
+  </section>
+</main>
+<script>
+(function(){var b=document.getElementById("themeBtn");b.addEventListener("click",function(){var r=document.documentElement,n=r.dataset.theme==="dark"?"light":"dark";r.dataset.theme=n;try{localStorage.setItem("theme",n);}catch(e){}});})();
+</script>
+</body>
+</html>

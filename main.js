@@ -4,333 +4,380 @@
   try { history.scrollRestoration = "manual"; } catch (e) {}
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var coarse = matchMedia("(pointer: coarse)").matches;
-  var hasGsap = typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined";
-  if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  var hasG = typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined";
+  if (hasG) gsap.registerPlugin(ScrollTrigger);
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var on = function (el, ev, fn, o) { if (el) el.addEventListener(ev, fn, o); };
 
-  /* ---------- theme ---------- */
-  var themeBtn = $("#themeBtn");
-  var gridColors = {};
-  function readColors() {
-    var cs = getComputedStyle(root);
-    gridColors.acc = cs.getPropertyValue("--acc-text").trim() || "#ff5a2c";
-    gridColors.line = cs.getPropertyValue("--mut").trim() || "#8a8a82";
+  /* ---------- theme and palette ---------- */
+  var grid = null;
+  function cssVar(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
+  function themeColor() { var m = $('meta[name="theme-color"]'); if (m) m.setAttribute("content", cssVar("--bg")); }
+  var palBtn = $("#palBtn"), palMenu = $("#palMenu");
+  function setPal(p) {
+    root.dataset.palette = p;
+    try { localStorage.setItem("palette", p); } catch (e) {}
+    $$("#palMenu [data-p]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.p === p)); });
+    if (grid) grid.refresh();
   }
-  themeBtn.addEventListener("click", function () {
-    var next = root.dataset.theme === "light" ? "dark" : "light";
+  on(palBtn, "click", function () {
+    var open = palMenu.hidden; palMenu.hidden = !open; palBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", function (e) {
+    if (!palMenu.hidden && !e.target.closest(".pal-wrap")) { palMenu.hidden = true; palBtn.setAttribute("aria-expanded", "false"); }
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !palMenu.hidden) { palMenu.hidden = true; palBtn.focus(); } });
+  $$("#palMenu [data-p]").forEach(function (b) { on(b, "click", function () { setPal(b.dataset.p); }); });
+  on($("#themeBtn"), "click", function () {
+    var next = root.dataset.theme === "dark" ? "light" : "dark";
     root.dataset.theme = next;
     try { localStorage.setItem("theme", next); } catch (e) {}
-    var m = $('meta[name="theme-color"]');
-    if (m) m.setAttribute("content", next === "light" ? "#f2f2f0" : "#0e0e0d");
-    readColors();
-    if (grid) grid.draw(true);
+    themeColor(); if (grid) grid.refresh();
   });
-  readColors();
+  setPal(root.dataset.palette || "teal"); themeColor();
 
-  /* ---------- hero test grid (canvas) ---------- */
-  var grid = null;
+  /* ---------- hero grid of "checks" (canvas) ---------- */
   (function () {
-    var canvas = $("#grid");
-    if (!canvas) return;
-    var ctx = canvas.getContext("2d");
-    var hero = canvas.parentElement;
-    var cell = 34, cols = 0, rows = 0, w = 0, h = 0, dpr = 1;
-    var lv = null, running = false, visible = true, raf = 0;
-    var mouse = { x: -999, y: -999 };
-    var sweep = -1, sweepAt = performance.now() + 1500;
-
+    var canvas = $("#grid"); if (!canvas) return;
+    var ctx = canvas.getContext("2d"), hero = canvas.parentElement;
+    var cell = 36, cols = 0, rows = 0, w = 0, h = 0, lv = null, running = false, visible = true, raf = 0;
+    var mouse = { x: -999, y: -999 }, sweep = -1, sweepAt = 1400, col = { a: "#0e5159", b: "#ff5a4e" };
+    function refresh() { col.a = cssVar("--brand"); col.b = cssVar("--acc"); if (reduce) draw(); }
     function size() {
-      var r = hero.getBoundingClientRect();
-      w = r.width; h = r.height;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cell = w < 700 ? 26 : 34;
+      var r = hero.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height; cell = w < 700 ? 28 : 36;
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cols = Math.ceil(w / cell); rows = Math.ceil(h / cell);
-      lv = new Float32Array(cols * rows);
-      if (reduce) seedStatic();
-    }
-    function seedStatic() {
-      for (var i = 0; i < lv.length; i++) if (Math.random() < 0.07) lv[i] = 0.35 + Math.random() * 0.4;
-      draw(true);
+      cols = Math.ceil(w / cell); rows = Math.ceil(h / cell); lv = new Float32Array(cols * rows);
+      if (reduce) { for (var i = 0; i < lv.length; i++) if (Math.random() < 0.06) lv[i] = 0.3 + Math.random() * 0.5; draw(); }
     }
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = gridColors.line;
-      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = col.a; ctx.globalAlpha = 0.16;
       for (var y = 0; y <= rows; y++) for (var x = 0; x <= cols; x++) ctx.fillRect(x * cell, y * cell, 1.5, 1.5);
-      ctx.fillStyle = gridColors.acc;
       for (var j = 0; j < lv.length; j++) {
-        var l = lv[j];
-        if (l > 0.02) {
-          ctx.globalAlpha = Math.min(l, 1) * 0.42;
-          ctx.fillRect((j % cols) * cell + 3, Math.floor(j / cols) * cell + 3, cell - 5, cell - 5);
-        }
+        var l = lv[j]; if (l <= 0.02) continue;
+        ctx.fillStyle = l > 0.8 ? col.b : col.a;
+        ctx.globalAlpha = Math.min(l, 1) * (l > 0.8 ? 0.55 : 0.28);
+        ctx.fillRect((j % cols) * cell + 3, ((j / cols) | 0) * cell + 3, cell - 6, cell - 6);
       }
       ctx.globalAlpha = 1;
     }
     function tick(t) {
       if (!running) return;
       var i, c, r;
-      for (i = 0; i < lv.length; i++) if (lv[i] > 0) lv[i] *= 0.93;
-      for (i = 0; i < 1; i++) { lv[(Math.random() * lv.length) | 0] = 0.55 + Math.random() * 0.45; }
+      for (i = 0; i < lv.length; i++) if (lv[i] > 0) lv[i] *= 0.94;
+      for (i = 0; i < 2; i++) lv[(Math.random() * lv.length) | 0] = 0.5 + Math.random() * 0.5;
       if (mouse.x > -900) {
         var mc = mouse.x / cell, mr = mouse.y / cell;
         for (r = Math.max(0, (mr - 4) | 0); r < Math.min(rows, mr + 5); r++)
           for (c = Math.max(0, (mc - 4) | 0); c < Math.min(cols, mc + 5); c++) {
             var d = Math.hypot(c + 0.5 - mc, r + 0.5 - mr);
-            if (d < 4) { var k = (1 - d / 4); var idx = r * cols + c; if (lv[idx] < k) lv[idx] = k; }
+            if (d < 4) { var k = 1 - d / 4, idx = r * cols + c; if (lv[idx] < k) lv[idx] = k; }
           }
       }
-      if (sweep < 0 && t > sweepAt) { sweep = 0; }
+      if (sweep < 0 && t > sweepAt) sweep = 0;
       if (sweep >= 0) {
-        var col = sweep | 0;
-        if (col < cols) { for (r = 0; r < rows; r++) if (Math.random() < 0.55) lv[r * cols + col] = 0.9; sweep += 0.7; }
-        else { sweep = -1; sweepAt = t + 7000; }
+        var cc = sweep | 0;
+        if (cc < cols) { for (r = 0; r < rows; r++) if (Math.random() < 0.5) lv[r * cols + cc] = 0.95; sweep += 0.8; }
+        else { sweep = -1; sweepAt = t + 6500; }
       }
-      draw();
-      raf = requestAnimationFrame(tick);
+      draw(); raf = requestAnimationFrame(tick);
     }
     function start() { if (running || reduce || !visible) return; running = true; raf = requestAnimationFrame(tick); }
     function stop() { running = false; cancelAnimationFrame(raf); }
-    hero.addEventListener("pointermove", function (e) {
-      var r = hero.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
-    });
-    hero.addEventListener("pointerleave", function () { mouse.x = mouse.y = -999; });
+    on(hero, "pointermove", function (e) { var r = hero.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+    on(hero, "pointerleave", function () { mouse.x = mouse.y = -999; });
     new IntersectionObserver(function (en) { visible = en[0].isIntersecting; visible ? start() : stop(); }).observe(hero);
-    var rt; new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(function () { size(); if (!reduce) start(); }, 120); }).observe(hero);
-    size(); start();
-    grid = { draw: draw };
+    var rt; new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(function () { size(); start(); }, 120); }).observe(hero);
+    refresh(); size(); start();
+    grid = { refresh: refresh };
   })();
 
-  /* ---------- glitch on "break" ---------- */
-  (function () {
-    var g = $("#glitch");
-    if (!g || reduce) return;
-    (function loop() {
-      setTimeout(function () {
-        g.classList.add("is-glitch");
-        setTimeout(function () { g.classList.remove("is-glitch"); loop(); }, 170);
-      }, 3200 + Math.random() * 3500);
-    })();
-  })();
-
-  /* ---------- intro ---------- */
+  /* ---------- intro: the logo draws itself, then the page opens ---------- */
   function intro() {
-    var boot = $("#boot");
-    if (boot) { boot.style.display = "none"; }
-    if (!hasGsap || reduce) return;
+    var boot = $("#boot"); if (boot) boot.style.display = "none";
+    if (!hasG || reduce) return;
     var tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-    tl.to(".line-in", { y: 0, duration: 1.1, stagger: 0.12 })
+    tl.to(".hero-copy .eyebrow", { opacity: 1, y: 0, duration: 0.7 })
+      .to(".ln-in", { y: 0, duration: 1.1, stagger: 0.12 }, "-=0.5")
       .to(".hero-sub", { opacity: 1, y: 0, duration: 0.8 }, "-=0.7")
       .to(".hero-cta", { opacity: 1, y: 0, duration: 0.8 }, "-=0.65")
-      .to(".portrait", { opacity: 1, y: 0, duration: 1.1 }, "-=1.1");
+      .to(".portrait", { opacity: 1, y: 0, scale: 1, duration: 1.2 }, "-=1.1");
   }
-  (function boot() {
-    var el = $("#boot");
-    var seen = false;
+  (function () {
+    var boot = $("#boot"), seen = false;
     try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
-    if (!el || !hasGsap || reduce || seen) { intro(); return; }
-    var num = $("#bootNum");
-    var o = { v: 0 };
-    gsap.to(o, {
-      v: 7, duration: 0.55, ease: "power1.inOut",
-      onUpdate: function () { num.textContent = Math.round(o.v); },
-      onComplete: function () {
-        try { sessionStorage.setItem("booted", "1"); } catch (e) {}
-        gsap.to(el, { yPercent: -100, duration: 0.6, ease: "expo.inOut", onComplete: intro });
-      }
-    });
+    if (!boot || !hasG || reduce || seen) { intro(); return; }
+    var tl = gsap.timeline({ onComplete: function () { try { sessionStorage.setItem("booted", "1"); } catch (e) {} } });
+    tl.to(".bm", { strokeDashoffset: 0, duration: 0.55, ease: "power2.out" })
+      .to(".bc", { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, "-=0.05")
+      .to(boot, { yPercent: -100, duration: 0.7, ease: "expo.inOut", delay: 0.25, onComplete: intro });
   })();
 
+  /* ---------- scroll progress ---------- */
+  if (hasG && !reduce) {
+    gsap.to("#progress", { scaleX: 1, ease: "none", scrollTrigger: { start: 0, end: "max", scrub: 0.2 } });
+  }
+
   /* ---------- magnetic buttons ---------- */
-  if (hasGsap && !reduce && !coarse) {
+  if (hasG && !reduce && !coarse) {
     $$("[data-magnet]").forEach(function (b) {
-      var xTo = gsap.quickTo(b, "x", { duration: 0.5, ease: "power3" });
-      var yTo = gsap.quickTo(b, "y", { duration: 0.5, ease: "power3" });
-      b.addEventListener("pointermove", function (e) {
-        var r = b.getBoundingClientRect();
-        xTo((e.clientX - (r.left + r.width / 2)) * 0.22);
-        yTo((e.clientY - (r.top + r.height / 2)) * 0.3);
-      });
-      b.addEventListener("pointerleave", function () { xTo(0); yTo(0); });
+      var xT = gsap.quickTo(b, "x", { duration: 0.5, ease: "power3" }), yT = gsap.quickTo(b, "y", { duration: 0.5, ease: "power3" });
+      on(b, "pointermove", function (e) { var r = b.getBoundingClientRect(); xT((e.clientX - (r.left + r.width / 2)) * 0.22); yT((e.clientY - (r.top + r.height / 2)) * 0.3); });
+      on(b, "pointerleave", function () { xT(0); yT(0); });
     });
   }
 
-  /* ---------- reveals ---------- */
+  /* ---------- tilt cards ---------- */
+  if (!reduce && !coarse) {
+    $$("[data-tilt]").forEach(function (c) {
+      on(c, "pointermove", function (e) {
+        var r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        c.style.setProperty("--ry", (x * 6).toFixed(2) + "deg"); c.style.setProperty("--rx", (-y * 6).toFixed(2) + "deg");
+      });
+      on(c, "pointerleave", function () { c.style.setProperty("--ry", "0deg"); c.style.setProperty("--rx", "0deg"); });
+    });
+  }
+
+  /* ---------- reveal on scroll ---------- */
   (function () {
-    var els = $$(".reveal");
+    var els = $$(".bento .cell, .exp-list li, .entry, .proj, .sg, .step, .show-tabs, .devices, .show-cap, .verify, .award, .h2, .lede");
+    els.forEach(function (e) { e.classList.add("reveal"); });
     if (!("IntersectionObserver" in window) || reduce) { els.forEach(function (e) { e.classList.add("in"); }); return; }
     var io = new IntersectionObserver(function (en) {
       en.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } });
-    }, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
+    }, { threshold: 0.1, rootMargin: "0px 0px -4% 0px" });
     els.forEach(function (e) { io.observe(e); });
+  })();
+
+  /* ---------- skill chips pop in one by one ---------- */
+  (function () {
+    var groups = $$(".chips");
+    if (!hasG || reduce) { groups.forEach(function (g) { $$(".chip", g).forEach(function (c) { c.style.opacity = 1; c.style.transform = "none"; }); }); return; }
+    groups.forEach(function (g) {
+      gsap.to($$(".chip", g), { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)", stagger: 0.06, scrollTrigger: { trigger: g, start: "top 90%", once: true } });
+    });
+  })();
+
+  /* ---------- ticker: the one marquee ---------- */
+  (function () {
+    var track = $("#track"); if (!track) return;
+    var belt = $(".belt", track), clone = belt.cloneNode(true);
+    clone.setAttribute("aria-hidden", "true"); track.appendChild(clone);
   })();
 
   /* ---------- statement: words light up as you scroll ---------- */
   (function () {
-    var p = $("#state");
-    if (!p) return;
-    var words = p.textContent.trim().split(/\s+/);
-    p.textContent = "";
+    var p = $("#state"); if (!p) return;
+    var words = p.textContent.trim().split(/\s+/); p.textContent = "";
     var spans = words.map(function (w, i) {
-      var s = document.createElement("span");
-      s.className = "w"; s.textContent = w;
-      p.appendChild(s);
-      if (i < words.length - 1) p.appendChild(document.createTextNode(" "));
-      return s;
+      var s = document.createElement("span"); s.className = "w"; s.textContent = w; p.appendChild(s);
+      if (i < words.length - 1) p.appendChild(document.createTextNode(" ")); return s;
     });
-    if (!hasGsap || reduce) { spans.forEach(function (s) { s.style.opacity = 1; }); return; }
-    gsap.to(spans, {
-      opacity: 1, ease: "none", stagger: 0.12,
-      scrollTrigger: { trigger: p, start: "top 82%", end: "bottom 45%", scrub: true }
-    });
+    if (!hasG || reduce) { spans.forEach(function (s) { s.style.opacity = 1; }); return; }
+    gsap.to(spans, { opacity: 1, ease: "none", stagger: 0.12, scrollTrigger: { trigger: p, start: "top 82%", end: "bottom 45%", scrub: true } });
   })();
 
-  /* ---------- counters ---------- */
-  if (hasGsap && !reduce) {
+  /* ---------- count-up numbers ---------- */
+  if (hasG && !reduce) {
     $$("[data-count]").forEach(function (el) {
-      var target = parseFloat(el.dataset.count);
-      var o = { v: 0 };
-      el.textContent = "0";
-      ScrollTrigger.create({
-        trigger: el, start: "top 88%", once: true,
-        onEnter: function () {
-          gsap.to(o, { v: target, duration: 1.6, ease: "power3.out", onUpdate: function () { el.textContent = Math.round(o.v); } });
-        }
-      });
+      var target = parseFloat(el.dataset.count), o = { v: 0 }; el.textContent = "0";
+      ScrollTrigger.create({ trigger: el, start: "top 90%", once: true, onEnter: function () {
+        gsap.to(o, { v: target, duration: 1.6, ease: "power3.out", onUpdate: function () { el.textContent = Math.round(o.v); } });
+      } });
     });
   }
 
-  /* ---------- agent diagram ---------- */
+  /* ---------- AI tester: pinned on desktop, stepped by scroll ---------- */
   (function () {
-    var steps = $$(".step");
-    var wires = $$(".wire");
-    var nodes = $$(".node");
-    var pulse = $("#pulse");
+    var steps = $$(".step"), wires = $$(".wire"), nodes = $$(".node"), pulse = $("#pulse");
     if (!steps.length) return;
-    var pos = [[260, 260], [260, 170], [350, 260], [260, 350], [170, 260]];
-    var cur = -1;
-    function setStep(i) {
+    var pos = [[260, 260], [260, 170], [350, 260], [260, 350], [170, 260]], cur = -1;
+    function set(i) {
       if (i === cur) return; cur = i;
       steps.forEach(function (s, k) { s.classList.toggle("is-on", k === i); });
-      nodes.forEach(function (n) {
-        var id = n.dataset.n;
-        n.classList.toggle("on", id === "core" ? true : parseInt(id, 10) <= i);
-      });
+      nodes.forEach(function (n) { var id = n.dataset.n; n.classList.toggle("on", id === "core" || parseInt(id, 10) <= i); });
       wires.forEach(function (w) { w.classList.toggle("on", parseInt(w.dataset.w, 10) < i); });
       var p = pos[i];
-      gsap.to(pulse, { opacity: i === 0 ? 0 : 1, duration: 0.3 });
-      if (hasGsap && !reduce) gsap.to(pulse, { attr: { cx: p[0], cy: p[1] }, duration: 0.7, ease: "power3.inOut" });
-      else { pulse.setAttribute("cx", p[0]); pulse.setAttribute("cy", p[1]); }
+      if (hasG && !reduce) { gsap.to(pulse, { attr: { cx: p[0], cy: p[1] }, opacity: i === 0 ? 0 : 1, duration: 0.7, ease: "power3.inOut" }); }
+      else { pulse.setAttribute("cx", p[0]); pulse.setAttribute("cy", p[1]); pulse.style.opacity = i === 0 ? 0 : 1; }
     }
-    setStep(0);
-    if (reduce || !hasGsap) { setStep(4); return; }
+    set(0);
+    if (reduce || !hasG) { set(4); return; }
     var mm = gsap.matchMedia();
     mm.add("(min-width: 861px)", function () {
-      ScrollTrigger.create({
-        trigger: ".agent-pin", start: "top top", end: "+=1100", pin: true, scrub: true,
-        onUpdate: function (self) { setStep(Math.min(4, Math.floor(self.progress * 5))); }
-      });
+      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top", end: "+=1100", pin: true, scrub: true,
+        onUpdate: function (s) { set(Math.min(4, Math.floor(s.progress * 5))); } });
     });
     mm.add("(max-width: 860px)", function () {
-      var t, i = 0, vis = false;
-      var io = new IntersectionObserver(function (en) {
-        vis = en[0].isIntersecting;
+      var t, i = 0, io = new IntersectionObserver(function (en) {
         clearInterval(t);
-        if (vis) t = setInterval(function () { i = (i + 1) % 5; setStep(i); }, 2200);
+        if (en[0].isIntersecting) t = setInterval(function () { i = (i + 1) % 5; set(i); }, 2300);
       }, { threshold: 0.3 });
       io.observe($(".agent-grid"));
       return function () { clearInterval(t); io.disconnect(); };
     });
   })();
 
-  /* ---------- certificates ---------- */
+  /* ---------- Switch screens: phone + browser slideshow ---------- */
   (function () {
-    var deck = $("#deck");
-    var cards = $$(".card", deck);
-    if (hasGsap && !reduce) {
+    var S = [
+      ["open", "Open the door", "A clean start. One tap and you are in."],
+      ["dashboard", "Your day at a glance", "New matches, applications in progress and your best opportunities."],
+      ["jobs", "Every job found", "Postings from email alerts, company pages and job boards in one list."],
+      ["triage", "Pursue or skip", "Review new jobs one by one. Every card shows why it matches."],
+      ["detail", "Why it matches", "The role, the requirements and an honest match score."],
+      ["apply", "Application ready", "A tailored resume, cover letter and answers, ready to send."],
+      ["tracker", "Track every application", "From applied to interview to offer, nothing gets lost."],
+      ["followups", "Follow-ups", "Reminders and drafted messages so no reply is forgotten."],
+      ["interviews", "Interview prep", "Practice questions and a prep checklist for each interview."],
+      ["analytics", "What is working", "Trends in your search, where jobs come from and how matches score."],
+      ["contacts", "People who can help", "Recruiters and hiring managers at the companies you want."],
+      ["assistant", "Ask the assistant", "Ask anything about your search in plain language."],
+      ["sources", "Source health", "Check that every job source is running and finding jobs."]
+    ];
+    var tabs = $("#showTabs"), screen = $("#screen"), bw = $("#bw"); if (!tabs) return;
+    var track = document.createElement("div"); track.className = "bw-track"; bw.appendChild(track);
+    var tabBtns = [], pImgs = [], bImgs = [], cur = 0, timer = 0, idleTimer = 0, userHold = false, inView = false;
+    S.forEach(function (s, i) {
+      var li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button"; b.setAttribute("role", "tab"); b.textContent = s[1]; b.setAttribute("aria-selected", "false");
+      b.addEventListener("click", function () { go(i, true); }); li.appendChild(b); tabs.appendChild(li); tabBtns.push(b);
+      var p = new Image(); p.src = "switch/img/" + s[0] + ".webp"; p.alt = ""; p.width = 720; p.height = 1680; p.loading = i < 2 ? "eager" : "lazy"; screen.appendChild(p); pImgs.push(p);
+      var q = new Image(); q.src = p.src; q.alt = ""; q.loading = "lazy"; q.addEventListener("click", function () { go(i, true); }); track.appendChild(q); bImgs.push(q);
+    });
+    function place() {
+      var tile = bImgs[0].offsetWidth || 120, gap = 14, W = bw.clientWidth;
+      track.style.transform = "translateX(" + (W / 2 - (cur * (tile + gap) + tile / 2)) + "px)";
+    }
+    function go(i, byUser) {
+      cur = (i + S.length) % S.length;
+      tabBtns.forEach(function (b, k) { b.setAttribute("aria-selected", String(k === cur)); });
+      pImgs.forEach(function (m, k) { m.classList.toggle("on", k === cur); });
+      bImgs.forEach(function (m, k) { m.classList.toggle("on", k === cur); });
+      $("#capT").textContent = S[cur][1]; $("#capD").textContent = S[cur][2];
+      place();
+      if (byUser) { userHold = true; clearTimeout(idleTimer); idleTimer = setTimeout(function () { userHold = false; }, 9000); }
+    }
+    function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (inView && !userHold) go(cur + 1); }, 3400); }
+    var show = $("#show");
+    new IntersectionObserver(function (en) { inView = en[0].isIntersecting; }, { threshold: 0.25 }).observe(show);
+    on(show, "pointerenter", function () { userHold = true; });
+    on(show, "pointerleave", function () { clearTimeout(idleTimer); idleTimer = setTimeout(function () { userHold = false; }, 1500); });
+    var sx = 0; on($(".phone"), "pointerdown", function (e) { sx = e.clientX; });
+    on($(".phone"), "pointerup", function (e) { var d = e.clientX - sx; if (Math.abs(d) > 40) go(cur + (d < 0 ? 1 : -1), true); });
+    on(window, "resize", place); on(window, "load", place);
+    go(0); loop();
+  })();
+
+  /* ---------- certificates: fan opens as you arrive, click to enlarge ---------- */
+  (function () {
+    var deck = $("#deck"), cards = $$(".card", deck);
+    if (hasG && !reduce) {
       var mm = gsap.matchMedia();
       mm.add("(min-width: 861px)", function () {
-        var tl = gsap.timeline({ scrollTrigger: { trigger: deck, start: "top 85%", end: "top 30%", scrub: 0.6 } });
-        tl.to(cards[0], { "--x": "-68%", "--y": "-46%", "--r": "-10deg" }, 0)
+        gsap.timeline({ scrollTrigger: { trigger: deck, start: "top 85%", end: "top 30%", scrub: 0.6 } })
+          .to(cards[0], { "--x": "-72%", "--y": "-46%", "--r": "-10deg" }, 0)
           .to(cards[1], { "--y": "-54%", "--r": "0deg" }, 0)
-          .to(cards[2], { "--x": "-32%", "--y": "-58%", "--r": "10deg" }, 0);
+          .to(cards[2], { "--x": "-28%", "--y": "-58%", "--r": "10deg" }, 0);
       });
     }
-    var dlg = $("#lightbox");
-    var img = $("#lbImg"), cap = $("#lbCap");
+    var dlg = $("#lightbox"), img = $("#lbImg"), cap = $("#lbCap");
     cards.forEach(function (c) {
-      c.addEventListener("click", function () {
+      on(c, "click", function () {
         img.src = c.dataset.full; img.alt = c.querySelector("img").alt; cap.textContent = c.dataset.title;
         if (dlg.showModal) dlg.showModal(); else window.open(c.dataset.full, "_blank");
       });
     });
-    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    on(dlg, "click", function (e) { if (e.target === dlg) dlg.close(); });
   })();
 
-  /* ---------- inspect mode (shows the test IDs) ---------- */
+  /* ---------- nav highlight ---------- */
   (function () {
-    var btn = $("#inspectBtn"), layer = $("#inspectLayer");
-    var on = false, pending = 0;
-    function build() {
-      layer.textContent = "";
-      var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      layer.style.height = docH + "px";
-      var sx = window.scrollX, sy = window.scrollY, n = 0;
-      $$("[data-testid]").forEach(function (el) {
-        if (getComputedStyle(el).position === "fixed") return;
-        var r = el.getBoundingClientRect();
-        if (r.width < 4 || r.height < 4) return;
-        var b = document.createElement("div");
-        b.className = "ibox";
-        b.style.cssText = "left:" + (r.left + sx) + "px;top:" + (r.top + sy) + "px;width:" + r.width + "px;height:" + r.height + "px;animation-delay:" + Math.min(n * 25, 600) + "ms";
-        var s = document.createElement("span");
-        s.textContent = "test id: " + el.dataset.testid;
-        b.appendChild(s); layer.appendChild(b); n++;
+    var links = $$("#links a"), map = {};
+    links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+    var secs = Object.keys(map).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (x) {
+        if (!x.isIntersecting) return;
+        links.forEach(function (a) { a.classList.remove("is-on"); });
+        var a = map[x.target.id]; if (a) a.classList.add("is-on");
       });
-    }
-    function schedule() { if (!on) return; cancelAnimationFrame(pending); pending = requestAnimationFrame(build); }
-    function toggle(v) {
-      on = typeof v === "boolean" ? v : !on;
-      btn.setAttribute("aria-pressed", String(on));
-      if (on) build(); else layer.textContent = "";
-    }
-    btn.addEventListener("click", function () { toggle(); });
-    document.addEventListener("keydown", function (e) {
-      if (e.key !== "x" && e.key !== "X") return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      var t = e.target.tagName;
-      if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT") return;
-      toggle();
-    });
-    if (hasGsap) {
-      ScrollTrigger.addEventListener("scrollEnd", schedule);
-      ScrollTrigger.addEventListener("refresh", schedule);
-    }
-    new ResizeObserver(schedule).observe(document.body);
-    window.addEventListener("load", schedule);
+    }, { rootMargin: "-40% 0px -55% 0px" });
+    secs.forEach(function (s) { io.observe(s); });
   })();
 
-  /* ---------- report form (opens the visitor's mail app) ---------- */
-  (function () {
-    var f = $("#report");
-    f.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var t = $("#f-title"), b = $("#f-body"), sev = $("#f-sev");
-      var bad = false;
-      [[t, "#e-title"], [b, "#e-body"]].forEach(function (p) {
-        var miss = !p[0].value.trim();
-        $(p[1]).hidden = !miss;
-        p[0].setAttribute("aria-invalid", String(miss));
-        if (miss) bad = true;
-      });
-      if (bad) { (t.value.trim() ? b : t).focus(); return; }
-      var subject = sev.value + " - " + t.value.trim();
-      var body = b.value.trim() + "\n\n" + t.value.trim();
-      location.href = "mailto:mack22081@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      $("#ok").hidden = false;
+  /* ---------- contact form (opens the visitor's mail app) ---------- */
+  on($("#report"), "submit", function (e) {
+    e.preventDefault();
+    var t = $("#f-title"), b = $("#f-body"), sev = $("#f-sev"), bad = false;
+    [[t, "#e-title"], [b, "#e-body"]].forEach(function (p) {
+      var miss = !p[0].value.trim(); $(p[1]).hidden = !miss; p[0].setAttribute("aria-invalid", String(miss)); if (miss) bad = true;
     });
+    if (bad) { (t.value.trim() ? b : t).focus(); return; }
+    location.href = "mailto:mack22081@gmail.com?subject=" + encodeURIComponent(sev.value + " - " + t.value.trim()) + "&body=" + encodeURIComponent(b.value.trim() + "\n\n" + t.value.trim());
+    $("#ok").hidden = false;
+  });
+
+  /* ---------- page check: real tests that run on this page ---------- */
+  (function () {
+    var btn = $("#qaBtn"), dlg = $("#qaDlg"), list = $("#qaList"), sub = $("#qaSub");
+    function rgba(str) {
+      var m = str.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)/);
+      if (m) return [m[1] * 255, m[2] * 255, m[3] * 255, m[4] === undefined ? 1 : +m[4]];
+      m = str.match(/rgba?\(([^)]+)\)/); if (!m) return [0, 0, 0, 1];
+      var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    }
+    function blend(f, b) { var a = f[3]; return [f[0] * a + b[0] * (1 - a), f[1] * a + b[1] * (1 - a), f[2] * a + b[2] * (1 - a), 1]; }
+    function lum(c) { var x = c.slice(0, 3).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * x[0] + 0.7152 * x[1] + 0.0722 * x[2]; }
+    function ratio(a, b) { var l1 = lum(a), l2 = lum(b), hi = Math.max(l1, l2), lo = Math.min(l1, l2); return (hi + 0.05) / (lo + 0.05); }
+    function bgOf(el) {
+      var stack = []; for (var n = el; n && n.nodeType === 1; n = n.parentElement) stack.push(getComputedStyle(n).backgroundColor);
+      var c = rgba(getComputedStyle(document.body).backgroundColor); if (c[3] === 0) c = [255, 255, 255, 1];
+      for (var i = stack.length - 1; i >= 0; i--) { var s = rgba(stack[i]); if (s[3] > 0) c = blend(s, c); } return c;
+    }
+    function run() {
+      root.classList.add("qa-run"); var res = [];
+      function add(name, pass, detail) { res.push({ name: name, pass: pass, detail: detail }); }
+      var imgs = $$("img").filter(function (i) { return i.getAttribute("src"); });
+      var noAlt = imgs.filter(function (i) { return !i.hasAttribute("alt"); }).length, broken = imgs.filter(function (i) { return i.complete && i.naturalWidth === 0; }).length;
+      add("Every image has a text description and loads", noAlt === 0 && broken === 0, imgs.length + " images, " + noAlt + " without text, " + broken + " broken");
+      var an = $$('a[href^="#"]').filter(function (a) { return a.getAttribute("href").length > 1; }), dead = an.filter(function (a) { return !document.getElementById(a.getAttribute("href").slice(1)); });
+      add("Every in-page link goes somewhere", dead.length === 0, an.length + " links checked, " + dead.length + " dead");
+      var ext = $$('a[target="_blank"]'), unsafe = ext.filter(function (a) { return !/noopener/.test(a.rel); });
+      add("Links that open a new tab are safe", unsafe.length === 0, ext.length + " links checked");
+      add("No sideways scrolling at this screen size", document.documentElement.scrollWidth <= window.innerWidth + 1, "Window is " + window.innerWidth + " px wide");
+      var hs = $$("h1,h2,h3,h4"), h1s = hs.filter(function (h) { return h.tagName === "H1"; }).length, jump = 0, last = 0;
+      hs.forEach(function (h) { var l = +h.tagName[1]; if (last && l > last + 1) jump++; last = l; });
+      add("Headings are in a sensible order", h1s === 1 && jump === 0, "One main heading, " + hs.length + " headings in total");
+      var fields = $$("input,select,textarea").filter(function (f) { return f.type !== "hidden"; }), unl = fields.filter(function (f) { return !(f.id && document.querySelector('label[for="' + f.id + '"]')); });
+      add("Every form field has a label", unl.length === 0, fields.length + " fields checked");
+      add("Page language is declared", !!root.lang, "Language: " + (root.lang || "missing"));
+      var els = $$("main *, header *").filter(function (el) {
+        if (el.closest("dialog") || el.closest("svg") || el.closest(".pal-menu") || !el.offsetParent) return false;
+        return Array.prototype.some.call(el.childNodes, function (n) { return n.nodeType === 3 && n.textContent.trim().length > 1; });
+      });
+      var fails = [], worst = 99;
+      els.forEach(function (el) {
+        var cs = getComputedStyle(el), bg = bgOf(el), fg = blend(rgba(cs.color), bg), size = parseFloat(cs.fontSize), bold = parseInt(cs.fontWeight, 10) >= 700;
+        var need = (size >= 24 || (size >= 18.66 && bold)) ? 3 : 4.5, r = ratio(fg, bg);
+        if (r < worst) worst = r; if (r < need) fails.push(el.textContent.trim().slice(0, 26) + " (" + r.toFixed(1) + ")");
+      });
+      add("Text is easy to read against its background", fails.length === 0, els.length + " pieces of text checked, lowest contrast " + worst.toFixed(1) + " to 1" + (fails.length ? ". Low: " + fails.slice(0, 3).join(", ") : ""));
+      var bytes = 0; try { performance.getEntriesByType("resource").forEach(function (r) { bytes += r.encodedBodySize || 0; }); } catch (e) {}
+      var kb = Math.round(bytes / 1024);
+      add("Page stays light", bytes === 0 || kb < 4000, bytes ? "Loaded " + kb + " KB so far" : "Size not available in this browser");
+      root.classList.remove("qa-run"); return res;
+    }
+    function show() {
+      var res = run(), ok = res.filter(function (r) { return r.pass; }).length;
+      sub.textContent = ok + " of " + res.length + " checks passed";
+      list.innerHTML = res.map(function (r) { return '<li class="' + (r.pass ? "pass" : "fail") + '"><b>' + (r.pass ? "Pass" : "Fail") + "</b><div>" + r.name + "<span>" + r.detail + "</span></div></li>"; }).join("");
+      btn.textContent = "Page check " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
+    }
+    on(btn, "click", function () { show(); if (dlg.showModal) dlg.showModal(); });
+    on(window, "load", function () { setTimeout(show, 1500); });
   })();
 })();
