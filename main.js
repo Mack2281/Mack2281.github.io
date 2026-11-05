@@ -218,7 +218,7 @@
     if (reduce || !hasG) { set(4); return; }
     var mm = gsap.matchMedia();
     mm.add("(min-width: 861px) and (min-height: 600px)", function () {
-      ScrollTrigger.create({ trigger: ".agent-pin", start: "center center", end: "+=800", pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
+      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top+=76", end: "+=700", pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
         onUpdate: function (s) { set(Math.min(4, Math.floor(s.progress * 5))); } });
     });
     mm.add("(max-width: 860px), (max-height: 599px)", function () {
