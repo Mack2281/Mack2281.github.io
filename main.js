@@ -217,11 +217,11 @@
     set(0);
     if (reduce || !hasG) { set(4); return; }
     var mm = gsap.matchMedia();
-    mm.add("(min-width: 861px)", function () {
-      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top", end: "+=800", pin: true, scrub: true,
+    mm.add("(min-width: 861px) and (min-height: 600px)", function () {
+      ScrollTrigger.create({ trigger: ".agent-pin", start: "center center", end: "+=800", pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
         onUpdate: function (s) { set(Math.min(4, Math.floor(s.progress * 5))); } });
     });
-    mm.add("(max-width: 860px)", function () {
+    mm.add("(max-width: 860px), (max-height: 599px)", function () {
       var t, i = 0, io = new IntersectionObserver(function (en) {
         clearInterval(t);
         if (en[0].isIntersecting) t = setInterval(function () { i = (i + 1) % 5; set(i); }, 2300);
@@ -346,6 +346,14 @@
     });
     loop();
   })();
+
+  /* ---------- re-measure once fonts and images have settled so pinned sections start in the right place ---------- */
+  if (hasG) {
+    var refresh = function () { ScrollTrigger.refresh(); };
+    on(window, "load", function () { setTimeout(refresh, 200); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(refresh, 100); });
+    var rz; on(window, "resize", function () { clearTimeout(rz); rz = setTimeout(refresh, 250); });
+  }
 
   /* ---------- nav highlight (a link can cover several sections) ---------- */
   (function () {
