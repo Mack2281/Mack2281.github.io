@@ -234,33 +234,25 @@
   /* ---------- Switch screens: phone + browser slideshow ---------- */
   (function () {
     var S = [
-      ["open", "Open the door", "A clean start. One tap and you are in.", ["Sign in with Google", "No long forms to get started"]],
       ["dashboard", "Your day at a glance", "New matches, applications in progress and your best opportunities.", ["Jobs found, new today, pursuing and top score", "The strongest matches come first"]],
       ["jobs", "Every job found", "Postings from email alerts, company pages and job boards in one list.", ["Filter by new, pursuing, skipped or watching", "Search by role or company"]],
       ["triage", "Pursue or skip", "Review new jobs one by one. Every card shows why it matches.", ["One tap to pursue or skip, with undo", "Separate tabs for new, watched and reviewed"]],
       ["detail", "Why it matches", "The role, the requirements and an honest match score.", ["The reasons behind every score", "Tabs for company, contacts, documents and chat"]],
-      ["apply", "Application ready", "A tailored resume, cover letter and answers, ready to send.", ["Documents tailored to each role", "It never submits anything for you"]],
       ["tracker", "Track every application", "From applied to interview to offer, nothing gets lost.", ["Every stage in one place", "A follow-up date on each card"]],
       ["followups", "Follow-ups", "Reminders and drafted messages so no reply is forgotten.", ["Due today, upcoming and done", "A draft message in one tap"]],
       ["interviews", "Interview prep", "Practice questions and a prep checklist for each interview.", ["Upcoming and past interviews", "Mock interview and tips"]],
       ["analytics", "What is working", "Trends in your search, where jobs come from and how matches score.", ["Search activity over time", "Which sources bring the best jobs"]],
       ["contacts", "People who can help", "Recruiters and hiring managers at the companies you want.", ["Contacts grouped by company", "Who you last spoke to and when"]],
-      ["assistant", "Ask the assistant", "Ask anything about your search in plain language.", ["Suggested questions to start", "Answers based on your own data"]],
-      ["sources", "Source health", "Check that every job source is running and finding jobs.", ["Email alerts, job boards and manual adds", "A health status for each source"]]
+      ["assistant", "Ask the assistant", "Ask anything about your search in plain language.", ["Suggested questions to start", "Answers based on your own data"]]
     ];
     var screen = $("#screen"), bw = $("#bw"), dots = $("#dots"); if (!screen) return;
-    var track = document.createElement("div"); track.className = "bw-track"; bw.appendChild(track);
     var dotBtns = [], pImgs = [], bImgs = [], cur = 0, timer = 0, idleTimer = 0, userHold = false, inView = false;
     S.forEach(function (s, i) {
       var d = document.createElement("button"); d.type = "button"; d.setAttribute("aria-label", "Screen " + (i + 1) + ": " + s[1]);
       d.addEventListener("click", function () { go(i, true); }); dots.appendChild(d); dotBtns.push(d);
       var p = new Image(); p.src = "switch/img/" + s[0] + ".webp"; p.alt = ""; p.width = 720; p.height = 1680; p.loading = i < 2 ? "eager" : "lazy"; screen.appendChild(p); pImgs.push(p);
-      var q = new Image(); q.src = p.src; q.alt = ""; q.loading = "lazy"; q.addEventListener("click", function () { go(i, true); }); track.appendChild(q); bImgs.push(q);
+      var q = new Image(); q.src = "switch/desk/" + s[0] + ".webp"; q.alt = ""; q.width = 1100; q.height = 611; q.className = "bw-img"; q.loading = i < 2 ? "eager" : "lazy"; bw.appendChild(q); bImgs.push(q);
     });
-    function place() {
-      var tile = bImgs[0].offsetWidth || 120, gap = 14, W = bw.clientWidth;
-      track.style.transform = "translateX(" + (W / 2 - (cur * (tile + gap) + tile / 2)) + "px)";
-    }
     function go(i, byUser) {
       cur = (i + S.length) % S.length;
       dotBtns.forEach(function (b, k) { if (k === cur) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
@@ -270,7 +262,6 @@
       $("#capT").textContent = S[cur][1]; $("#capD").textContent = S[cur][2];
       $("#capP").innerHTML = S[cur][3].map(function (t) { return "<li>" + t + "</li>"; }).join("");
       if (!reduce) { [$("#capT"), $("#capD"), $("#capP")].forEach(function (el) { el.classList.remove("cap-anim"); void el.offsetWidth; el.classList.add("cap-anim"); }); }
-      place();
       if (byUser) { userHold = true; clearTimeout(idleTimer); idleTimer = setTimeout(function () { userHold = false; }, 9000); }
     }
     function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (inView && !userHold) go(cur + 1); }, 3600); }
@@ -282,7 +273,6 @@
     on($("#next"), "click", function () { go(cur + 1, true); });
     var sx = 0; on($(".phone"), "pointerdown", function (e) { sx = e.clientX; });
     on($(".phone"), "pointerup", function (e) { var d = e.clientX - sx; if (Math.abs(d) > 40) go(cur + (d < 0 ? 1 : -1), true); });
-    on(window, "resize", place); on(window, "load", place);
     go(0); loop();
   })();
 
