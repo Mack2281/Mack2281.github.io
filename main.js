@@ -338,7 +338,9 @@
         back.src = im.src; back.alt = P[cur][2]; back.removeAttribute("aria-hidden");
         front.setAttribute("aria-hidden", "true"); front.alt = "";
         void back.offsetWidth;                        // make sure the new photo is painted before fading
-        back.classList.add("on"); front.classList.remove("on");
+        back.classList.remove("out"); back.classList.add("on");           // new photo: fades in while slowly zooming
+        front.classList.remove("on"); front.classList.add("out");         // old photo: fades out, holding its zoom
+        var gone = front; setTimeout(function () { gone.classList.remove("out"); }, FADE + 80);
         cap.classList.add("fade"); setTimeout(function () { cap.textContent = P[cur][1]; cap.classList.remove("fade"); }, FADE / 2);
         var t = front; front = back; back = t;
         setTimeout(function () {

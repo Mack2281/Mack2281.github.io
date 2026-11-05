@@ -438,3 +438,10 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 #micCap{transition:opacity .35s ease}
 #micCap.fade{opacity:0}
 @media (prefers-reduced-motion:reduce){.mic-img,#micCap{transition:none}}
+
+/* slow zoom on the photo being shown; the outgoing photo holds its zoom while it fades */
+.mic-img.on{animation:micZoom 7s ease-out forwards}
+.mic-img.out{transform:scale(1.09);transform-origin:50% 40%}
+.mic-img{transform-origin:50% 40%}
+@keyframes micZoom{from{transform:scale(1)}to{transform:scale(1.09)}}
+@media (prefers-reduced-motion:reduce){.mic-img.on{animation:none}.mic-img.out{transform:none}}
