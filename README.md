@@ -1,6 +1,6 @@
 # Portfolio
 
-Source for https://mack2281.github.io, the portfolio of Mayank Agrawal, Senior QA Engineer.
+Source for https://mayank-agrawal-sqa.github.io, the portfolio of Mayank Agrawal, Senior QA Engineer.
 
 Plain HTML, CSS and JavaScript with GSAP for scroll animation. No build step. Fonts (Geist) are self-hosted.
 
