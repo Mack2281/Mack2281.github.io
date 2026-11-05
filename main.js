@@ -312,7 +312,7 @@
   (function () {
     var P = [
       ["kalakar", "Kalakar", "Mayank leaning on a wall beneath a painted sign that reads Kalakar"],
-      ["tape-a-tale", "Tape A Tale", "Mayank reading from a notebook on stage at Tape A Tale"],
+      ["tape-a-tale", "Abhinay at GHAR", "Mayank reading from a notebook on stage, beside a Tape A Tale sign"],
       ["sahitya-tak", "Sahitya Tak, Mike Ke Laal", "Mayank performing on stage at the Sahitya Tak event Mike Ke Laal"],
       ["red-curtain", "Red curtain set", "Mayank speaking into a microphone in front of a red curtain"],
       ["black-white", "Open Mic - Tape a Tale", "Black and white photo of Mayank seated on a stool, performing"],
