@@ -317,8 +317,8 @@
       ["red-curtain", "On stage", "Mayank speaking into a microphone in front of a red curtain"],
       ["black-white", "On stage", "Black and white photo of Mayank seated on a stool, performing"],
       ["spotlight", "On stage", "Close-up of Mayank speaking into a microphone under stage lights"],
-      ["with-performers", "With fellow performers", "Mayank with three other performers in front of a bright poster"],
-      ["with-poet", "Aks-Ghar", "Mayank with a poet in front of the Aks-Ghar sign"],
+      ["with-performers", "At an event", "Mayank posing with three people in front of a bright poster at an event"],
+      ["with-poet", "With Shayar - Azhar Iqbal", "Mayank with shayar Azhar Iqbal at a literary event"],
       ["aajtak-set", "Aaj Tak Sahitya festival", "Mayank seated at a desk on the Aaj Tak Sahitya festival set"]
     ];
     var A = $("#micA"), B = $("#micB"), cap = $("#micCap"), box = $("#mic"); if (!A) return;
