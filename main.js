@@ -308,43 +308,62 @@
     on(dlg, "click", function (e) { if (e.target === dlg) dlg.close(); });
   })();
 
-  /* ---------- open-mic photos: one small framed viewer ---------- */
+  /* ---------- open-mic photos: one small framed viewer with smooth cross-fades ---------- */
   (function () {
     var P = [
       ["kalakar", "Kalakar", "Mayank leaning on a wall beneath a painted sign that reads Kalakar"],
       ["tape-a-tale", "Tape A Tale", "Mayank reading from a notebook on stage at Tape A Tale"],
       ["sahitya-tak", "Sahitya Tak, Mike Ke Laal", "Mayank performing on stage at the Sahitya Tak event Mike Ke Laal"],
-      ["red-curtain", "On stage", "Mayank speaking into a microphone in front of a red curtain"],
-      ["black-white", "On stage", "Black and white photo of Mayank seated on a stool, performing"],
-      ["spotlight", "On stage", "Close-up of Mayank speaking into a microphone under stage lights"],
+      ["red-curtain", "Red curtain set", "Mayank speaking into a microphone in front of a red curtain"],
+      ["black-white", "Black and white, on the stool", "Black and white photo of Mayank seated on a stool, performing"],
+      ["spotlight", "Under the spotlight", "Close-up of Mayank speaking into a microphone under stage lights"],
       ["with-performers", "At an event", "Mayank posing with three people in front of a bright poster at an event"],
       ["with-poet", "With Shayar - Azhar Iqbal", "Mayank with shayar Azhar Iqbal at a literary event"],
       ["aajtak-set", "Aaj Tak Sahitya festival", "Mayank seated at a desk on the Aaj Tak Sahitya festival set"]
     ];
     var A = $("#micA"), B = $("#micB"), cap = $("#micCap"), box = $("#mic"); if (!A) return;
-    var cur = 0, front = A, back = B, timer = 0, hold = false, seen = false;
-    function show(i) {
-      cur = (i + P.length) % P.length;
-      back.src = "assets/stage/" + P[cur][0] + ".webp"; back.alt = P[cur][2]; back.removeAttribute("aria-hidden");
-      front.setAttribute("aria-hidden", "true"); front.alt = "";
-      var f = front; front = back; back = f;
-      front.classList.add("on"); back.classList.remove("on");
-      cap.textContent = P[cur][1];
+    var cur = 0, front = A, back = B, timer = 0, hold = false, seen = false, busy = false, queued = null, FADE = 700;
+    var cache = {};
+    function load(i) {   // preload and decode so a photo is ready before it fades in
+      var k = P[i][0];
+      if (!cache[k]) {
+        var im = new Image(); im.decoding = "async"; im.src = "assets/stage/" + k + ".webp";
+        cache[k] = (im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = r; im.onerror = r; })).then(function () { return im; });
+      }
+      return cache[k];
     }
-    show(0);
-    function loop() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (seen && !hold) show(cur + 1); }, 3400); }
+    function swap(i) {
+      busy = true; cur = (i + P.length) % P.length;
+      load(cur).then(function (im) {
+        back.src = im.src; back.alt = P[cur][2]; back.removeAttribute("aria-hidden");
+        front.setAttribute("aria-hidden", "true"); front.alt = "";
+        void back.offsetWidth;                        // make sure the new photo is painted before fading
+        back.classList.add("on"); front.classList.remove("on");
+        cap.classList.add("fade"); setTimeout(function () { cap.textContent = P[cur][1]; cap.classList.remove("fade"); }, FADE / 2);
+        var t = front; front = back; back = t;
+        setTimeout(function () {
+          busy = false;
+          if (queued !== null) { var q = queued; queued = null; swap(q); }
+        }, FADE + 60);
+        load((cur + 1) % P.length);              // warm up the next one
+      });
+    }
+    function go(i) { if (busy) { queued = i; return; } swap(i); }
+    function step(d) { go(cur + d); restart(); }
+    function restart() { clearInterval(timer); if (reduce) return; timer = setInterval(function () { if (seen && !hold && !busy) go(cur + 1); }, 4200); }
+    A.src = "assets/stage/" + P[0][0] + ".webp"; A.alt = P[0][2]; cap.textContent = P[0][1]; load(0); load(1);
     new IntersectionObserver(function (en) { seen = en[0].isIntersecting; }, { threshold: 0.3 }).observe(box);
     on(box, "pointerenter", function () { hold = true; }); on(box, "pointerleave", function () { hold = false; });
-    on($("#micPrev"), "click", function () { show(cur - 1); }); on($("#micNext"), "click", function () { show(cur + 1); });
+    on($("#micPrev"), "click", function () { step(-1); }); on($("#micNext"), "click", function () { step(1); });
     var dlg = $("#lightbox"), lbImg = $("#lbImg"), lbCap = $("#lbCap");
     on($("#micMain"), "click", function () {
       var p = P[cur];
-      lbImg.src = "assets/stage/" + p[0] + ".webp"; lbImg.alt = p[2]; lbCap.textContent = p[1];   // small version shows instantly
+      lbImg.src = "assets/stage/" + p[0] + ".webp"; lbImg.alt = p[2]; lbCap.textContent = p[1];
       var big = new Image(); big.onload = function () { if (dlg.open && lbImg.alt === p[2]) lbImg.src = big.src; };
       big.src = "assets/stage/" + p[0] + "-full.webp";
       if (dlg.showModal) dlg.showModal();
     });
-    loop();
+    restart();
   })();
 
   /* ---------- re-measure once fonts and images have settled so pinned sections start in the right place ---------- */
