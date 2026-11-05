@@ -476,3 +476,6 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 .bug li{display:list-item;padding:0;border:0;list-style:decimal}
 
 @media (prefers-reduced-motion:reduce){.bw-img{transition:none}}
+
+.cap-more{display:block;margin-top:6px;white-space:nowrap}
+@media (max-width:400px){.cap-more{white-space:normal}}
