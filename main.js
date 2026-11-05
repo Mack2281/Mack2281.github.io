@@ -200,35 +200,35 @@
     });
   }
 
-  /* ---------- AI tester: pinned on desktop, stepped by scroll ---------- */
+  /* ---------- AI tester: steps play on their own when in view (no scroll pinning, so no lag) ---------- */
   (function () {
-    var steps = $$(".step"), wires = $$(".wire"), nodes = $$(".node"), pulse = $("#pulse");
+    var steps = $$(".step"), wires = $$(".wire"), nodes = $$(".node"), pulse = $("#pulse"), box = $(".agent-grid");
     if (!steps.length) return;
-    var pos = [[260, 260], [260, 170], [350, 260], [260, 350], [170, 260]], cur = -1;
-    function set(i) {
+    var pos = [[0, 0], [0, -90], [90, 0], [0, 90], [-90, 0]], cur = -1, timer = 0, seen = false, hold = false, user = 0;
+    function set(i, play) {
       if (i === cur) return; cur = i;
-      steps.forEach(function (s, k) { s.classList.toggle("is-on", k === i); });
+      steps.forEach(function (s, k) { s.classList.toggle("is-on", k === i); s.classList.remove("run"); });
+      if (play) { void steps[i].offsetWidth; steps[i].classList.add("run"); }
       nodes.forEach(function (n) { var id = n.dataset.n; n.classList.toggle("on", id === "core" || parseInt(id, 10) <= i); });
       wires.forEach(function (w) { w.classList.toggle("on", parseInt(w.dataset.w, 10) < i); });
-      var p = pos[i];
-      if (hasG && !reduce) { gsap.to(pulse, { attr: { cx: p[0], cy: p[1] }, opacity: i === 0 ? 0 : 1, duration: 0.7, ease: "power3.inOut" }); }
-      else { pulse.setAttribute("cx", p[0]); pulse.setAttribute("cy", p[1]); pulse.style.opacity = i === 0 ? 0 : 1; }
+      pulse.style.opacity = i === 0 ? 0 : 1;
+      pulse.style.transform = "translate(" + pos[i][0] + "px," + pos[i][1] + "px)";
     }
-    set(0);
-    if (reduce || !hasG) { set(4); return; }
-    var mm = gsap.matchMedia();
-    mm.add("(min-width: 861px) and (min-height: 600px)", function () {
-      ScrollTrigger.create({ trigger: ".agent-pin", start: "top top+=76", end: "+=700", pin: true, scrub: true, anticipatePin: 1, invalidateOnRefresh: true,
-        onUpdate: function (s) { set(Math.min(4, Math.floor(s.progress * 5))); } });
+    function loop() {
+      clearInterval(timer);
+      if (reduce) return;
+      timer = setInterval(function () { if (seen && !hold && Date.now() - user > 7000) set((cur + 1) % steps.length, true); }, 3200);
+    }
+    steps.forEach(function (s, k) {
+      on(s, "click", function () { user = Date.now(); set(k, false); });
+      on(s, "focus", function () { user = Date.now(); set(k, false); });
+      s.setAttribute("tabindex", "0");
     });
-    mm.add("(max-width: 860px), (max-height: 599px)", function () {
-      var t, i = 0, io = new IntersectionObserver(function (en) {
-        clearInterval(t);
-        if (en[0].isIntersecting) t = setInterval(function () { i = (i + 1) % 5; set(i); }, 2300);
-      }, { threshold: 0.3 });
-      io.observe($(".agent-grid"));
-      return function () { clearInterval(t); io.disconnect(); };
-    });
+    on(box, "pointerenter", function () { hold = true; }); on(box, "pointerleave", function () { hold = false; });
+    new IntersectionObserver(function (en) { seen = en[0].isIntersecting; if (seen && cur === 0) steps[0].classList.add("run"); }, { threshold: 0.35 }).observe(box);
+    set(0, false);
+    if (reduce) { set(steps.length - 1, false); return; }
+    loop();
   })();
 
   /* ---------- Switch screens: phone + browser slideshow ---------- */
@@ -421,7 +421,7 @@
     }
     function run() {
       root.classList.add("qa-run"); var res = [];
-      function add(name, pass, detail) { res.push({ name: name, pass: pass, detail: detail }); }
+      function add(name, pass, detail, bug) { res.push({ name: name, pass: pass, detail: detail, bug: bug }); }
       var imgs = $$("img").filter(function (i) { return i.getAttribute("src"); });
       var noAlt = imgs.filter(function (i) { return !i.hasAttribute("alt"); }).length, broken = imgs.filter(function (i) { return i.complete && i.naturalWidth === 0; }).length;
       add("Every image has a text description and loads", noAlt === 0 && broken === 0, imgs.length + " images, " + noAlt + " without text, " + broken + " broken");
@@ -450,14 +450,40 @@
       var bytes = 0; try { performance.getEntriesByType("resource").forEach(function (r) { bytes += r.encodedBodySize || 0; }); } catch (e) {}
       var kb = Math.round(bytes / 1024);
       add("Page stays light", bytes === 0 || kb < 4000, bytes ? "Loaded " + kb + " KB so far" : "Size not available in this browser");
+      // two honest findings: these are real gaps in this page, logged the way I would log them on a project
+      var moving = [].concat($$(".track").filter(function (t) { return getComputedStyle(t).animationName !== "none"; }), $$(".mic-img.on, .bw-track"));
+      var hasPause = !!document.querySelector("[data-pause], [aria-label*='Pause' i]");
+      add("Moving content can be paused by the visitor", reduce || hasPause,
+        moving.length + " moving elements (tools strip, photo viewer, screens slideshow), no pause button",
+        { id: "BUG-001", sev: "Minor", area: "Accessibility", title: "Moving content has no pause button",
+          steps: ["Open the page on a laptop or phone.", "Watch the tools strip under the hero, the screens slideshow and the photo viewer.", "Try to stop any of them with the keyboard or a tap."],
+          expected: "A visible Pause button, as WCAG 2.2.2 asks for anything that moves for more than 5 seconds.",
+          actual: "They keep moving. The strip only stops while a mouse hovers over it. Visitors who set 'reduce motion' on their device are not affected.",
+          fix: "Add a Pause button next to each moving element." });
+      var form = $("#report"), formUrl = form ? (form.getAttribute("action") || "") : "";
+      add("Contact form sends without needing an email app", /^https?:/.test(formUrl),
+        form ? "Form has no server address, it opens the visitor's email app" : "No form found",
+        { id: "BUG-002", sev: "Minor", area: "Functional", title: "Contact form depends on an email app being set up",
+          steps: ["Open the Contact section and fill in the form.", "Press Send message on a device with no email app set up."],
+          expected: "The message is delivered and the visitor sees a confirmation.",
+          actual: "Nothing is sent. The page only shows a note with the email address to write to.",
+          fix: "Send the form to a form service so delivery does not depend on the visitor's device." });
       root.classList.remove("qa-run"); return res;
     }
+    function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function bugHtml(b) {
+      return '<details class="bug" open><summary><span class="bug-id">' + b.id + '</span> ' + esc(b.title) + '<em class="sev">' + b.sev + '</em></summary>' +
+        '<dl><dt>Area</dt><dd>' + b.area + '</dd><dt>Steps to reproduce</dt><dd><ol>' + b.steps.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + '</ol></dd>' +
+        '<dt>Expected</dt><dd>' + esc(b.expected) + '</dd><dt>Actual</dt><dd>' + esc(b.actual) + '</dd><dt>Suggested fix</dt><dd>' + esc(b.fix) + '</dd></dl></details>';
+    }
     function show() {
-      var res = run(), ok = res.filter(function (r) { return r.pass; }).length;
-      sub.textContent = ok + " of " + res.length + " checks passed";
-      list.innerHTML = res.map(function (r) { return '<li class="' + (r.pass ? "pass" : "fail") + '"><b>' + (r.pass ? "Pass" : "Fail") + "</b><div>" + r.name + "<span>" + r.detail + "</span></div></li>"; }).join("");
-      btn.textContent = "Live QA report " + ok + "/" + res.length; btn.classList.toggle("pass", ok === res.length);
-      var cnt = $("#qaCount"), wd = $("#qaWord"); if (cnt) { cnt.textContent = ok + "/" + res.length; wd.textContent = ok === res.length ? "checks passed, just now" : "checks passed. Open the report to see what failed"; }
+      var res = run(), ok = res.filter(function (r) { return r.pass; }).length, bad = res.length - ok;
+      sub.innerHTML = '<b class="n-ok">' + ok + ' passed</b>' + (bad ? ' <b class="n-bad">' + bad + ' open issue' + (bad > 1 ? "s" : "") + '</b>' : "") + ' <span>of ' + res.length + ' checks</span>';
+      res.sort(function (a, b) { return (a.pass ? 1 : 0) - (b.pass ? 1 : 0); });
+      list.innerHTML = res.map(function (r) {
+        return '<li class="' + (r.pass ? "pass" : "fail") + '"><b>' + (r.pass ? "Pass" : "Fail") + "</b><div>" + r.name + "<span>" + r.detail + "</span>" + (r.bug ? bugHtml(r.bug) : "") + "</div></li>";
+      }).join("");
+      btn.textContent = "Live QA report " + ok + "/" + res.length; btn.classList.toggle("pass", bad === 0);
     }
     function open() { show(); if (dlg.showModal) dlg.showModal(); }
     on(btn, "click", open); on($("#qaFoot"), "click", open);

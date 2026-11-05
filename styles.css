@@ -130,18 +130,17 @@ h1 em{font-style:italic;color:var(--acc-text);padding-right:.05em}
 .exp-list a,.fine a{color:var(--acc-text);text-underline-offset:3px;font-weight:650}
 
 /* AI tester (pinned on wide screens) */
-.agent{background:var(--bg2);padding:0}
-.agent-pin{display:flex;align-items:center;padding:clamp(28px,5vh,64px) 0}
+.agent{background:var(--bg2)}
+.agent-pin{display:block}
 .agent-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center}
 .agent .h2{margin-bottom:18px}
 .steps{display:grid;gap:4px;margin-bottom:18px}
-.step{padding:12px 16px;border:1px solid transparent;position:relative;opacity:.45;transition:opacity .4s,background .3s,border-color .3s;cursor:pointer}
+.step{padding:12px 16px;border:1px solid transparent;position:relative;opacity:.5;transition:opacity .3s,background-color .3s,border-color .3s;cursor:pointer}
 .step:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc);transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease)}
 .step.is-on{opacity:1;background:var(--card);border-color:var(--line)}
 .step.is-on:before{transform:scaleY(1)}
 .step h3{font-size:1.1rem;letter-spacing:-.015em;font-weight:650}
-.step p{color:var(--mut);font-size:.96rem;max-width:48ch;max-height:0;opacity:0;overflow:hidden;transition:max-height .5s var(--ease),opacity .4s}
-.step.is-on p{max-height:90px;opacity:1}
+.step p{color:var(--mut);font-size:.96rem;max-width:48ch;margin-top:2px}
 .fine{font-size:1rem}
 .diagram{width:100%;max-width:clamp(520px,28vw,820px);justify-self:center}
 .diagram svg{width:100%;height:auto;overflow:visible}
@@ -153,7 +152,7 @@ h1 em{font-style:italic;color:var(--acc-text);padding-right:.05em}
 .node.on rect{fill:var(--brand);stroke:var(--brand)}
 .node.on text,.node.on text.sub{fill:var(--on-brand)}
 .node.core rect{stroke-width:2.5}
-.pulse{fill:var(--acc)}
+.pulse{fill:var(--acc);transition:transform .6s cubic-bezier(.65,0,.35,1),opacity .3s;will-change:transform}
 
 /* Switch showcase */
 .show{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr);gap:clamp(20px,4vw,56px);align-items:start}
@@ -263,10 +262,10 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 .qa-h{font-size:1.6rem;letter-spacing:-.03em;margin-bottom:4px}
 .qa-sub{font-weight:700;color:var(--ok);margin-bottom:14px;font-size:1.1rem}
 .qa-list{border:1px solid var(--line)}
-.qa-list li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:10px 14px;font-size:.95rem}
-.qa-list li+li{border-top:1px solid var(--line)}
+.qa-list>li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:10px 14px;font-size:.95rem}
+.qa-list>li+li{border-top:1px solid var(--line)}
 .qa-list b{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}
-.qa-list li.fail b{color:var(--err)}
+.qa-list>li.fail b{color:var(--err)}
 .qa-list span{color:var(--mut);display:block;font-size:.88rem}
 
 /* reveals */
@@ -317,7 +316,7 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
   .exp-list{grid-template-columns:1fr}
   .entry{grid-template-columns:1fr}
   .when{position:static}
-  .agent{padding:var(--sec) 0}.agent-pin{min-height:0;padding:0}
+  
   .btn,.btn-line{width:100%}
   .hero-cta{flex-direction:column}
   .report .btn{justify-self:stretch}
@@ -433,7 +432,6 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 @media (max-width:1100px){.about-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.about-facts{grid-template-columns:1fr}}
 /* AI tester: sits close under the header instead of floating in the middle of an empty screen */
-.agent-pin{padding:clamp(14px,2.5vh,28px) 0}
 
 #micCap{transition:opacity .35s ease}
 #micCap.fade{opacity:0}
@@ -445,3 +443,35 @@ dialog p#lbCap{padding-top:10px;font-weight:600}
 .mic-img{transform-origin:50% 40%}
 @keyframes micZoom{from{transform:scale(1)}to{transform:scale(1.09)}}
 @media (prefers-reduced-motion:reduce){.mic-img.on{animation:none}.mic-img.out{transform:none}}
+
+/* AI tester: progress line that fills while a step is showing */
+.step:after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--acc);transform:scaleX(0);transform-origin:0 50%}
+.step.is-on.run:after{animation:stepbar 3.2s linear forwards}
+@keyframes stepbar{to{transform:scaleX(1)}}
+.agent-grid{align-items:start}
+.diagram{position:sticky;top:calc(var(--nav) + 24px)}
+@media (max-width:1000px){.diagram{position:static}}
+@media (prefers-reduced-motion:reduce){.step.is-on.run:after{animation:none;transform:scaleX(1)}}
+
+/* Live QA report: counts, and failing checks written up as bug reports */
+.qa-sub{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-size:1.05rem}
+.qa-sub .n-ok{color:var(--ok)}
+.qa-sub .n-bad{color:var(--err)}
+.qa-sub span{color:var(--mut);font-weight:500}
+.qa-list>li.fail{background:color-mix(in srgb,var(--err) 7%,var(--card))}
+.qa-list>li.fail b{color:var(--err)}
+.bug{margin-top:10px;border:1px solid var(--err);background:var(--card)}
+.bug summary{cursor:pointer;padding:9px 12px;font-weight:650;display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--ink);font-size:.95rem}
+.bug-id{font-family:var(--mono);font-size:.74rem;background:var(--err);color:#fff;padding:2px 7px;letter-spacing:.04em}
+.sev{font-style:normal;font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);padding:1px 7px;margin-left:auto;color:var(--mut)}
+.bug dl{display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;padding:4px 12px 12px;font-size:.88rem;border-top:1px solid var(--line)}
+.bug dt{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);padding-top:3px}
+.bug dd{color:var(--ink)}
+.bug ol{padding-left:18px;list-style:decimal}
+.qa-list .bug span{display:inline}
+@media (max-width:560px){.bug dl{grid-template-columns:1fr}}
+
+.qa-list .bug-id{display:inline-block;color:#fff;font-size:.74rem}
+.qa-list .bug summary{display:flex}
+.qa-list .bug span.sev,.qa-list .bug-id{margin-top:0}
+.bug li{display:list-item;padding:0;border:0;list-style:decimal}
