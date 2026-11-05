@@ -315,7 +315,7 @@
       ["tape-a-tale", "Tape A Tale", "Mayank reading from a notebook on stage at Tape A Tale"],
       ["sahitya-tak", "Sahitya Tak, Mike Ke Laal", "Mayank performing on stage at the Sahitya Tak event Mike Ke Laal"],
       ["red-curtain", "Red curtain set", "Mayank speaking into a microphone in front of a red curtain"],
-      ["black-white", "Black and white, on the stool", "Black and white photo of Mayank seated on a stool, performing"],
+      ["black-white", "Open Mic - Tape a Tale", "Black and white photo of Mayank seated on a stool, performing"],
       ["spotlight", "Under the spotlight", "Close-up of Mayank speaking into a microphone under stage lights"],
       ["with-performers", "At an event", "Mayank posing with three people in front of a bright poster at an event"],
       ["with-poet", "With Shayar - Azhar Iqbal", "Mayank with shayar Azhar Iqbal at a literary event"],
